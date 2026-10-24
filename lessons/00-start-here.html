@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Start here — DSA with Python</title>
+<link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/core.js"></script>
+</head>
+<body data-lesson="00">
+<main><div class="content">
+
+<div class="kicker">Lesson 00 · Start here</div>
+<h1>Why DSA felt hard — and how this course is different</h1>
+<p class="lead">You tried LeetCode and videos and it didn't click. That is normal, and it is <b>not</b> because you're bad at it.
+It usually happens for a few specific reasons. This course is built to fix each one.</p>
+
+<h2>1. Why videos + LeetCode didn't work</h2>
+<table>
+<tr><th>What went wrong</th><th>Why it happens</th><th>What this course does instead</th></tr>
+<tr><td>"I understood the video, but I can't solve the next problem."</td><td>Watching is <b>recognising</b>. Solving is <b>producing</b>. Your brain only learns what it actively does.</td><td>Every idea ends with you <b>typing code</b> that is checked by tests. No passive lessons.</td></tr>
+<tr><td>"I don't know how to start."</td><td>You started problems before learning the ~15 <b>patterns</b> that almost all problems are made of.</td><td>One pattern per lesson, with a <b>template</b> and the <b>signals</b> that tell you when to use it.</td></tr>
+<tr><td>"I can't follow what the code does."</td><td>You can't yet <b>run code in your head</b>. Videos skip the boring middle steps — but that's where understanding is.</td><td>A <b>step-by-step visualizer</b> runs the real Python, and you watch every variable change. You also <b>predict</b> the next step and fill <b>trace tables</b>.</td></tr>
+<tr><td>"I read the solution and it seemed obvious."</td><td>Reading a solution feels like learning but isn't (the "illusion of competence").</td><td>Hints come one at a time. The solution asks you to try 15 minutes first, then asks you to retype it from memory.</td></tr>
+<tr><td>"I forgot everything after a week."</td><td>Memory fades fast without review.</td><td>Solved problems come back for <b>review</b> after 1, 3, 7, 21 days (see the home page).</td></tr>
+<tr><td>"Python feels strange."</td><td>Your Python basics have gaps, so every problem is two problems.</td><td>Lesson 01 rebuilds Python <i>for DSA</i>, compared with Dart, which you know.</td></tr>
+</table>
+
+<h2>2. The method: 5 steps, every lesson</h2>
+<div class="method">
+<div class="m"><span class="n">1</span><b>👀 SEE</b><span>Watch the algorithm run on real data, one line at a time.</span></div>
+<div class="m"><span class="n">2</span><b>🧠 PREDICT</b><span>Guess the next line or the next value <i>before</i> you see it.</span></div>
+<div class="m"><span class="n">3</span><b>🧩 PATTERN</b><span>Learn the template and the signals that say "use me".</span></div>
+<div class="m"><span class="n">4</span><b>🛠 BUILD</b><span>Write it yourself. Tests tell you when it's right.</span></div>
+<div class="m"><span class="n">5</span><b>🔁 REVIEW</b><span>Solve it again from scratch days later.</span></div>
+</div>
+
+<h2>3. Try the visualizer now</h2>
+<p>This is the tool you'll use in every lesson. It runs real Python and records every step. Click the box, then press <kbd>Next ▶</kbd>
+(or the <kbd>→</kbd> key) and watch:</p>
+<ul>
+<li>the yellow line is the line that runs <b>next</b>;</li>
+<li>on the right, <b>variables</b> that just changed light up;</li>
+<li>the blue bar under the code explains the step.</li>
+</ul>
+<div data-viz="start-total"></div>
+<p>Now press <b>🧠 Predict mode</b> and go again from the start (⏮). Before each step, click the line you think Python runs next.
+Notice how a <code>for</code> loop jumps <i>back up</i> to line 3 after line 4, and how the call on line 7 jumps <i>into</i> the function.</p>
+<p>Then press <b>✏️ Edit &amp; visualize</b>, change <code>[4, 7, 1]</code> to your own numbers, and run it. (The first time,
+the browser downloads Python — a few seconds.)</p>
+
+<div data-tracetable="start-total" data-line="4" data-vars="x, result"
+  data-intro="Trace table: every time line 4 (<code>result += x</code>) is <i>about to run</i>, what are <code>x</code> and <code>result</code>? This simple habit — tracing by hand — is the #1 skill for DSA."></div>
+
+<h2>4. The problem-solving routine (use it for EVERY problem)</h2>
+<p>When you see a new problem, don't start typing. Go through these steps — on paper or as comments in the editor.</p>
+<div class="callout pattern"><span class="title">🧩 The 6-step routine</span>
+<ol>
+<li><b>Understand.</b> Say the problem in your own words. What is the input? What do I return? What are the limits (size of n)?</li>
+<li><b>Examples by hand.</b> Do 2–3 small examples on paper. Include edge cases: empty list, one element, duplicates, negatives.
+<i>Watch what your hands do</i> — that is your algorithm.</li>
+<li><b>Brute force first.</b> What is the simplest correct idea, even if slow? Say its Big-O.</li>
+<li><b>Find the waste.</b> What does brute force repeat or check for nothing? Which <b>pattern</b> removes that waste? (Signals in each lesson.)</li>
+<li><b>Code it</b> — write the steps as comments first, then fill in the code.</li>
+<li><b>Test &amp; trace.</b> Run your examples through the code by hand (or with 🎬 Watch my code). Then say the time and space complexity.</li>
+</ol></div>
+
+<h3>Example: the routine on "find the largest number"</h3>
+<ol>
+<li><b>Understand:</b> input is a list of numbers (at least one), return the biggest.</li>
+<li><b>By hand:</b> <code>[3, 9, 2, 12, 5]</code>. What did my eyes do? I looked left to right and remembered "the biggest so far": 3 → 9 → 9 → 12 → 12.</li>
+<li><b>Brute force:</b> that <i>is</i> already good: one pass. O(n).</li>
+<li><b>Waste?</b> None — we must look at every number at least once, so O(n) is the best possible.</li>
+<li><b>Code:</b> "biggest so far" becomes a variable <code>best</code>:</li>
+</ol>
+<div data-viz="start-max"></div>
+<p>"Something so far" variables (best so far, smallest so far, count so far) appear in a huge number of problems. Remember this one.</p>
+
+<h2>5. 🛠 Your first two problems</h2>
+<p>Type your code in the editor, then press <b>▶ Run tests</b> (or <kbd>Ctrl</kbd>/<kbd>⌘</kbd>+<kbd>Enter</kbd>).
+Your code is saved in this browser automatically.</p>
+<div data-problem="start-total" data-n="1"></div>
+<div data-problem="start-count-evens" data-n="2"></div>
+
+<h2>6. How to study with this course</h2>
+<div class="cards">
+<div class="card"><h4>⏱ Time</h4><p>60–90 minutes a day, 5–6 days a week. One lesson takes 2–4 days. The whole path is about <b>10–12 weeks</b>.</p></div>
+<div class="card"><h4>📒 Paper</h4><p>Keep a notebook. Draw the arrays, pointers and trees. Fill trace tables by hand. Drawing <i>is</i> thinking.</p></div>
+<div class="card"><h4>🔁 Start each day with reviews</h4><p>The home page lists the problems due today. Solve them from a blank editor before new material.</p></div>
+<div class="card"><h4>🗣 Explain out loud</h4><p>After each problem, say: "The pattern is ___ because ___. It's O(___)." If you can't say it, you don't know it yet.</p></div>
+<div class="card"><h4>💻 Two ways to practise</h4><p>In the browser (instant tests), or in VS Code with the <code>workbook/</code> files (<code>python3 workbook/05_two_pointers.py</code>).</p></div>
+<div class="card"><h4>🧗 Being stuck is the work</h4><p>15 minutes stuck = learning. Then use one hint. Then another. The solution is the last step, not the first.</p></div>
+</div>
+
+<div data-quiz="start-quiz"></div>
+
+<div class="callout tip"><span class="title">Where you're going</span>
+Stage 1 fixes Python and teaches Big-O. Stages 2–6 teach one pattern or data structure per lesson. Stage 7 (lesson 20) mixes
+everything: you get problems <i>without</i> being told the pattern — that is what LeetCode and interviews feel like.</div>
+
+</div></main>
+<script src="data/00-start-here.js"></script>
+<script src="data/00-start-here.traces.js"></script>
+<script src="../assets/py-src.js"></script>
+<script src="../assets/player.js"></script>
+<script src="../assets/python.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

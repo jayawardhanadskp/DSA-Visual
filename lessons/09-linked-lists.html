@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Linked lists — DSA with Python</title>
+<link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/core.js"></script>
+</head>
+<body data-lesson="09">
+<main><div class="content">
+
+<div class="kicker">Lesson 09 · Linked structures</div>
+<h1>Linked lists</h1>
+<p class="lead">A linked list is a chain of small objects ("nodes"), each holding a value and an <b>arrow</b> to the next node. There are no
+indexes. Linked-list problems aren't hard algorithms — they test whether you can move arrows without losing anything. The trick is to <b>draw</b>.</p>
+
+<div class="callout key"><span class="title">🎯 After this lesson you can</span>
+<ul><li>build, walk, insert into and delete from a linked list</li>
+<li>reverse a list (prev / curr / nxt) and explain every line</li>
+<li>use fast &amp; slow pointers (middle, cycle) and the dummy-node trick</li>
+<li>solve LeetCode 206, 876, 21, 141, 19, 234, 83, 2</li></ul></div>
+
+<h2>1. The node</h2>
+<div class="two-col">
+<div><div class="label">Dart</div>
+<pre><code class="plain">class ListNode {
+  int val;
+  ListNode? next;
+  ListNode(this.val, [this.next]);
+}</code></pre></div>
+<div><div class="label">Python (LeetCode's version)</div>
+<pre><code>class ListNode:
+    def __init__(self, val=0, next=None):
+        self.val = val
+        self.next = next</code></pre></div>
+</div>
+<p>A variable like <code>head</code> or <code>curr</code> doesn't hold a node — it <b>points</b> to one (lesson 01, references!). So <code>curr = curr.next</code>
+moves a pointer; it doesn't change the list. Only assignments to <code>.next</code> change the list.</p>
+<pre class="playground">
+class ListNode:
+    def __init__(self, val=0, next=None):
+        self.val = val
+        self.next = next
+
+head = ListNode(1, ListNode(2, ListNode(3)))
+curr = head
+while curr is not None:          # the standard walk
+    print(curr.val, "->", end=" ")
+    curr = curr.next
+print("None")
+</pre>
+
+<h2>2. Arrays vs linked lists</h2>
+<table>
+<tr><th></th><th>Array (Python list)</th><th>Linked list</th></tr>
+<tr><td>get the i-th item</td><td>O(1)</td><td>O(i) — walk from the head</td></tr>
+<tr><td>insert / delete at the front</td><td>O(n) — shift everything</td><td><b>O(1)</b> — change the head</td></tr>
+<tr><td>insert / delete after a node you hold</td><td>O(n)</td><td><b>O(1)</b> — re-point arrows</td></tr>
+<tr><td>memory</td><td>one block</td><td>nodes anywhere, + one pointer each</td></tr>
+</table>
+<div data-viz="ll-insert"></div>
+
+<h2>3. 👀 Reversing a list</h2>
+<p>Walk once and flip every arrow to point backwards. You need three pointers: <code>prev</code> (the part already reversed), <code>curr</code> (the node being
+flipped) and <code>nxt</code> (so you don't lose the rest). Step through slowly — and draw it on paper too.</p>
+<div data-viz="ll-reverse"></div>
+<div data-tracetable="ll-reverse" data-line="10" data-vars="prev, curr" data-max="4"
+  data-intro="Before line 10 (<code>nxt = curr.next</code>) each time, which nodes are <code>prev</code> and <code>curr</code>? Write them like <code>ListNode(2)</code> or <code>None</code>."></div>
+
+<h2>4. 👀 Fast &amp; slow pointers</h2>
+<p>Two pointers start at the head; <code>fast</code> moves 2 steps for every 1 step of <code>slow</code>. When fast reaches the end, slow is in the middle.</p>
+<div data-viz="ll-middle"></div>
+<p>And if the list has a <b>cycle</b>, fast never reaches the end — it goes around and eventually lands on the same node as slow (like a fast runner lapping a slow one on a track).</p>
+<div data-viz="ll-cycle"></div>
+
+<h2>5. 👀 The dummy node</h2>
+<p>When you build a new list (merge, add, filter), the first node is a special case: "is the result empty yet?". A <b>dummy</b> node removes that case.
+Start with a fake node, always attach to <code>tail.next</code>, and return <code>dummy.next</code>.</p>
+<div data-viz="ll-merge"></div>
+
+<div class="callout pattern"><span class="title">🧩 Linked list templates</span>
+<pre><code># walk
+curr = head
+while curr:
+    ...
+    curr = curr.next
+
+# reverse
+prev, curr = None, head
+while curr:
+    nxt = curr.next
+    curr.next = prev
+    prev, curr = curr, nxt
+# prev is the new head
+
+# fast & slow
+slow = fast = head
+while fast and fast.next:
+    slow, fast = slow.next, fast.next.next
+
+# build with a dummy
+dummy = tail = ListNode(0)
+...  tail.next = node; tail = tail.next
+return dummy.next</code></pre>
+<p><b>Signals:</b> "linked list" in the problem (obviously!), "in place", "middle", "cycle", "k-th from the end", "merge", "reverse".</p></div>
+
+<h2>6. How to never get lost</h2>
+<ol>
+<li><b>Draw</b> 3–4 boxes and arrows. Do every assignment with an eraser.</li>
+<li>Before changing <code>x.next</code>, ask: "Do I still have a pointer to the node <code>x.next</code> points to now?" If not, save it first.</li>
+<li>Check the edge cases: empty list (<code>head is None</code>), one node, two nodes.</li>
+<li>Guard every <code>.next</code> access: <code>x.next.next</code> crashes if <code>x.next</code> is <code>None</code> (<code>AttributeError: 'NoneType' object has no attribute 'next'</code>).</li>
+</ol>
+
+<h2>7. 🛠 Practice</h2>
+<p><code>ListNode</code> is already defined in the editor. Tests show lists as Python lists: <code>[1, 2, 3]</code> = 1 → 2 → 3.
+Use <b>🎬 Watch my code</b> a lot here — it draws your nodes and arrows. Workbook: <code>workbook/09_linked_lists.py</code>.</p>
+<div data-problem="ll-reverse" data-n="1"></div>
+<div data-problem="ll-middle" data-n="2"></div>
+<div data-problem="ll-merge" data-n="3"></div>
+<div data-problem="ll-cycle" data-n="4"></div>
+<div data-problem="ll-dedupe" data-n="5"></div>
+<div data-problem="ll-remove-nth" data-n="6"></div>
+<div data-problem="ll-palindrome" data-n="7"></div>
+<div data-problem="ll-add-two" data-n="8"></div>
+
+<div data-quiz="ll-quiz"></div>
+
+<h2>8. 📌 Summary</h2>
+<ul>
+<li>Nodes + arrows. Moving a pointer variable doesn't change the list; assigning <code>.next</code> does.</li>
+<li>Four templates: walk, reverse, fast &amp; slow, dummy node.</li>
+<li>Draw first, save before you overwrite, and check <code>None</code>.</li>
+</ul>
+<p><b>More LeetCode:</b> 142 Linked List Cycle II · 160 Intersection of Two Linked Lists · 328 Odd Even Linked List · 143 Reorder List · 24 Swap Nodes in Pairs · 138 Copy List with Random Pointer (uses a dict!) · 146 LRU Cache (dict + doubly linked list).</p>
+
+</div></main>
+<script src="data/09-linked-lists.js"></script>
+<script src="data/09-linked-lists.traces.js"></script>
+<script src="../assets/py-src.js"></script>
+<script src="../assets/player.js"></script>
+<script src="../assets/python.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

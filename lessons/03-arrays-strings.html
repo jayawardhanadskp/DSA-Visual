@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Arrays &amp; strings — DSA with Python</title>
+<link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/core.js"></script>
+</head>
+<body data-lesson="03">
+<main><div class="content">
+
+<div class="kicker">Lesson 03 · Arrays &amp; hashing</div>
+<h1>Arrays &amp; strings</h1>
+<p class="lead">Most interview problems are about arrays (Python lists) and strings. Before learning tricks, understand what an array
+<i>is</i> in memory — then the costs from lesson 02 stop being things to memorise and start being obvious.</p>
+
+<div class="callout key"><span class="title">🎯 After this lesson you can</span>
+<ul><li>explain why indexing is O(1) but inserting at the front is O(n)</li>
+<li>solve problems in one pass with "so far" variables</li>
+<li>use a counting list (<code>[0] * 26</code>) for letters</li>
+<li>walk a 2-D grid and its neighbours safely</li></ul></div>
+
+<h2>1. What an array is</h2>
+<p>An array is a row of <b>equal-sized slots, next to each other in memory</b>. If the first slot is at address 1000 and each slot is 8 bytes,
+slot <code>i</code> is at <code>1000 + 8 × i</code>. Python does that math and jumps straight there. That's why <code>a[i]</code> is O(1) — no searching.</p>
+<div data-widget="array-memory"></div>
+<div class="callout dart"><span class="title">Python list = Dart List = a "dynamic array"</span>
+It keeps some extra free slots at the end. <code>append</code> uses a free slot (O(1)). When it runs out, it allocates a bigger block
+(about 1.125–2× bigger) and copies everything. That copy is rare, so on average <code>append</code> is still O(1) ("amortised O(1)").</div>
+
+<h2>2. 👀 Inserting in the middle</h2>
+<p>Python's <code>insert</code> does this in fast C code, but the work is the same: every element after the index moves one slot.</p>
+<div data-viz="arr-insert"></div>
+<p>So <code>insert(0, x)</code> and <code>pop(0)</code> on a list of n elements move n elements. If you need fast operations at the front, use
+<code>collections.deque</code> (lesson 08).</p>
+
+<h2>3. Pattern: one pass with "so far" variables</h2>
+<p>Many array problems can be solved by walking once from left to right while remembering a <b>summary of the past</b>: the minimum so far, the best
+answer so far, a count so far… Ask yourself: <i>"If I'm standing at index i, what do I need to know about everything before i?"</i></p>
+<div data-viz="arr-stock"></div>
+<div data-tracetable="arr-stock" data-line="6" data-vars="price, lowest, best" data-max="5"
+  data-intro="Before line 6 runs each time, what are <code>price</code>, <code>lowest</code> and <code>best</code>? Prices are <code>[7, 1, 5, 3, 6, 4]</code>."></div>
+<div class="callout pattern"><span class="title">🧩 Template: one pass</span>
+<pre><code>best = initial_value            # 0, float("inf"), nums[0], ...
+summary = initial_summary       # what I remember about the past
+for x in nums:
+    best = update(best, x, summary)   # use the past to answer "what if it ends here?"
+    summary = remember(summary, x)    # then add x to the past
+return best</code></pre>
+<p><b>Signals:</b> "maximum / minimum …", "best day", "so far", one answer from a whole list, O(n) required.</p></div>
+
+<h2>4. Pattern: counting with a list</h2>
+<p>When the values are small numbers or lowercase letters, a plain list can be a counter: index = the value, content = how many times we saw it.
+<code>ord(ch) - ord("a")</code> turns <code>'a'..'z'</code> into <code>0..25</code>.</p>
+<div data-viz="arr-letter-counts"></div>
+<p>Two words are anagrams exactly when their 26 counts are equal. A dict (<code>Counter</code>) does the same job for any kind of value — that's lesson 04.</p>
+
+<h2>5. Strings</h2>
+<ul>
+<li>A string is an <b>immutable</b> array of characters. Indexing and slicing work like lists. <code>s[i] = …</code> is an error.</li>
+<li>To change characters, convert: <code>chars = list(s)</code> → edit → <code>"".join(chars)</code>.</li>
+<li>Build results in a list, then <code>"".join(parts)</code> (not <code>+=</code> in a loop).</li>
+<li>Useful: <code>s.split()</code>, <code>" ".join()</code>, <code>s.isalnum()</code>, <code>s.lower()</code>, <code>s[::-1]</code>, <code>ord</code>/<code>chr</code>.</li>
+</ul>
+<pre class="playground">
+s = "hello world"
+chars = list(s)
+chars[0] = "H"
+print("".join(chars))
+print(s.split(), s.title(), s.count("o"), s.find("world"))
+print([s[i:i + 3] for i in range(0, len(s), 3)])     # chunks of 3
+</pre>
+
+<h2>6. 2-D grids</h2>
+<p>A grid is a list of rows: <code>grid[r][c]</code>. Many problems ask you to look at a cell's neighbours. Use a list of <b>directions</b> and always
+check the bounds (remember: negative indexes don't crash in Python, they wrap around!).</p>
+<div data-viz="arr-grid"></div>
+<div class="callout pattern"><span class="title">🧩 Template: neighbours in a grid</span>
+<pre><code>rows, cols = len(grid), len(grid[0])
+for dr, dc in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+    nr, nc = r + dr, c + dc
+    if 0 <= nr < rows and 0 <= nc < cols:
+        ...  # use grid[nr][nc]</code></pre>
+<p>You'll use this exact code again in graphs (lesson 15): islands, flood fill, shortest path in a maze.</p></div>
+
+<h2>7. Common mistakes</h2>
+<table>
+<tr><th>Mistake</th><th>Fix</th></tr>
+<tr><td>Off-by-one: <code>range(len(a) + 1)</code> or <code>a[len(a)]</code></td><td>Valid indexes are <code>0 … len(a) - 1</code>. Trace the first and last loop step by hand.</td></tr>
+<tr><td>Removing items from a list while looping over it</td><td>Build a new list, or loop over a copy, or use the write-pointer pattern (lesson 05).</td></tr>
+<tr><td><code>nums = …</code> inside a function that must change the list in place</td><td>Use <code>nums[:] = …</code> or change elements by index.</td></tr>
+<tr><td>Starting "smallest so far" at 0</td><td>Start at <code>nums[0]</code> or <code>float("inf")</code>.</td></tr>
+<tr><td>Forgetting empty input</td><td>Always ask: what if the list/string is empty? One element?</td></tr>
+</table>
+
+<h2>8. 🛠 Practice</h2>
+<p>Workbook file: <code>workbook/03_arrays_strings.py</code>.</p>
+<div data-problem="arr-profit" data-n="1"></div>
+<div data-problem="arr-missing" data-n="2"></div>
+<div data-problem="arr-plus-one" data-n="3"></div>
+<div data-problem="arr-merge" data-n="4"></div>
+<div data-problem="arr-prefix" data-n="5"></div>
+<div data-problem="arr-compress" data-n="6"></div>
+<div data-problem="arr-rotate" data-n="7"></div>
+<div data-problem="arr-spiral" data-n="8"></div>
+<div data-problem="arr-rotate-image" data-n="9"></div>
+
+<div data-quiz="arr-quiz"></div>
+
+<h2>9. 📌 Summary</h2>
+<ul>
+<li>Arrays are slots side by side: index O(1), insert/remove in the middle or front O(n), append/pop at the end O(1).</li>
+<li>Strings are immutable arrays of characters: build with a list + <code>join</code>.</li>
+<li>"So far" variables turn many problems into one O(n) pass.</li>
+<li>Grids: <code>grid[r][c]</code>, a directions list, and a bounds check.</li>
+</ul>
+<p><b>More LeetCode:</b> 1 Two Sum (next lesson!) · 238 Product of Array Except Self (lesson 07) · 36 Valid Sudoku · 73 Set Matrix Zeroes · 344 Reverse String · 1929 Concatenation of Array.</p>
+
+</div></main>
+<script src="data/03-arrays-strings.js"></script>
+<script src="data/03-arrays-strings.traces.js"></script>
+<script src="../assets/py-src.js"></script>
+<script src="../assets/player.js"></script>
+<script src="../assets/python.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

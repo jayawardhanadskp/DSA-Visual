@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sorting — DSA with Python</title>
+<link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/core.js"></script>
+</head>
+<body data-lesson="11">
+<main><div class="content">
+
+<div class="kicker">Lesson 11 · Recursion &amp; searching</div>
+<h1>Sorting</h1>
+<p class="lead">In real code you call <code>sorted()</code>. But knowing <b>how</b> sorting works teaches the two big strategies of algorithms —
+"grow a sorted part step by step" and "divide &amp; conquer" — and "sort first" is the hidden first step of countless problems.</p>
+
+<div class="callout key"><span class="title">🎯 After this lesson you can</span>
+<ul><li>explain insertion sort, merge sort and quick sort, and their Big-O</li>
+<li>use <code>sorted</code> / <code>.sort</code> with <code>key=</code>, tuple keys and <code>reverse=</code></li>
+<li>recognise when sorting first makes a problem easy</li></ul></div>
+
+<h2>1. Feel the difference</h2>
+<p>Press Start. Then try "Reversed input" and "Almost sorted input" — the winner changes!</p>
+<div data-widget="sort-race"></div>
+
+<h2>2. 👀 Insertion sort — O(n²)</h2>
+<p>Like sorting playing cards in your hand: pick up the next card and slide it left until it's in the right place. The green part is always sorted.</p>
+<div data-viz="sort-insertion"></div>
+<ul>
+<li>Worst case (reversed list): every card slides all the way → about n²/2 steps → <b>O(n²)</b>.</li>
+<li>Almost sorted list: every card slides 0–1 places → <b>O(n)</b>. Great for small or nearly sorted data.</li>
+<li>In place: O(1) extra memory. <b>Stable</b>: equal values keep their order.</li>
+</ul>
+<p>(Bubble sort and selection sort are the other famous O(n²) sorts. You can see bubble sort in the race above; it's mostly useful as a bad example.)</p>
+
+<h2>3. 👀 Merge sort — O(n log n)</h2>
+<p><b>Divide &amp; conquer</b>: split the list in half, sort each half (recursion — trust it!), then merge the two sorted halves with two pointers.
+Watch the call tree: the splitting goes down log₂ n levels, and each level merges n elements in total.</p>
+<div data-viz="sort-merge"></div>
+<pre><code class="plain">level 0:  [6, 3, 8, 1, 5, 2]                 1 list of 6
+level 1:  [6, 3, 8]   [1, 5, 2]              2 lists of 3
+level 2:  [6] [3, 8]  [1] [5, 2]             ...
+level 3:      [3] [8]     [5] [2]            log₂(6) ≈ 3 levels × n work each = O(n log n)</code></pre>
+<p>Merge sort is always O(n log n), and stable, but needs O(n) extra memory for the merged lists.</p>
+
+<h2>4. 👀 Quick sort — O(n log n) on average</h2>
+<p>Pick a <b>pivot</b>. <b>Partition</b>: move everything smaller than the pivot to its left, then put the pivot right after them — it is now in its
+<b>final</b> place forever. Then quick-sort the left part and the right part.</p>
+<div data-viz="sort-quick"></div>
+<ul>
+<li>Average O(n log n), in place (O(log n) stack). Usually the fastest in practice.</li>
+<li>Worst case O(n²): when the pivot is always the smallest or biggest (e.g. sorted input with the last element as pivot). A random pivot avoids this.</li>
+<li>The <b>partition</b> idea alone solves problems: "sort colors", "k-th largest" (quickselect), "move zeroes".</li>
+</ul>
+
+<h2>5. Sorting in real Python</h2>
+<p>Python uses <b>Timsort</b> (merge sort + insertion sort for small runs): O(n log n) worst case, O(n) on sorted data, and stable.</p>
+<pre class="playground">
+nums = [5, 2, 9, 1]
+print(sorted(nums), nums)          # sorted() returns a NEW list
+nums.sort(reverse=True)            # .sort() changes the list, returns None
+print(nums)
+
+words = ["kiwi", "Fig", "banana", "apple"]
+print(sorted(words))                       # 'F' < 'a' (uppercase first!)
+print(sorted(words, key=str.lower))        # case-insensitive
+print(sorted(words, key=len))              # by length (stable: ties keep order)
+people = [("ann", 30), ("bob", 25), ("cat", 30)]
+print(sorted(people, key=lambda p: (-p[1], p[0])))   # age desc, then name asc
+print(max(people, key=lambda p: p[1]))     # key= works for max/min too
+</pre>
+<div class="callout dart"><span class="title">Dart → Python</span>
+Dart: <code>list.sort((a, b) =&gt; a.age.compareTo(b.age))</code> (a compare function).
+Python prefers a <b>key</b>: <code>list.sort(key=lambda p: p.age)</code>. If you really need a compare function, use <code>functools.cmp_to_key</code> (practice problem 8).</div>
+
+<h2>6. "Sort first" — the hidden pattern</h2>
+<p>Ask early: <i>would this be easy if the input were sorted?</i> Sorting costs O(n log n), which is usually fine.</p>
+<table>
+<tr><th>After sorting…</th><th>Example</th></tr>
+<tr><td>duplicates and close values sit next to each other</td><td>minimum difference, remove duplicates</td></tr>
+<tr><td>two pointers work</td><td>3Sum, pair sum (lesson 05)</td></tr>
+<tr><td>binary search works</td><td>lesson 12</td></tr>
+<tr><td>intervals can be merged in one sweep</td><td>merge intervals (lesson 18)</td></tr>
+<tr><td>greedy choices become obvious</td><td>assign cookies, meeting rooms (lesson 18)</td></tr>
+</table>
+
+<h2>7. Summary table</h2>
+<table>
+<tr><th>Algorithm</th><th>Best</th><th>Average</th><th>Worst</th><th>Extra space</th><th>Stable</th></tr>
+<tr><td>Bubble / insertion</td><td>O(n)</td><td>O(n²)</td><td>O(n²)</td><td>O(1)</td><td>yes</td></tr>
+<tr><td>Selection</td><td>O(n²)</td><td>O(n²)</td><td>O(n²)</td><td>O(1)</td><td>no</td></tr>
+<tr><td>Merge</td><td>O(n log n)</td><td>O(n log n)</td><td>O(n log n)</td><td>O(n)</td><td>yes</td></tr>
+<tr><td>Quick</td><td>O(n log n)</td><td>O(n log n)</td><td>O(n²)</td><td>O(log n)</td><td>no</td></tr>
+<tr><td>Heap sort (lesson 14)</td><td>O(n log n)</td><td>O(n log n)</td><td>O(n log n)</td><td>O(1)</td><td>no</td></tr>
+<tr><td>Timsort (Python)</td><td>O(n)</td><td>O(n log n)</td><td>O(n log n)</td><td>O(n)</td><td>yes</td></tr>
+<tr><td>Counting sort</td><td colspan="3">O(n + k) for integers in a range of size k</td><td>O(k)</td><td>yes</td></tr>
+</table>
+
+<h2>8. 🛠 Practice</h2>
+<p>Workbook: <code>workbook/11_sorting.py</code>.</p>
+<div data-problem="so-insertion" data-n="1"></div>
+<div data-problem="so-merge-sort" data-n="2"></div>
+<div data-problem="so-colors" data-n="3"></div>
+<div data-problem="so-people" data-n="4"></div>
+<div data-problem="so-min-diff" data-n="5"></div>
+<div data-problem="so-frequency" data-n="6"></div>
+<div data-problem="so-kth" data-n="7"></div>
+<div data-problem="so-largest-number" data-n="8"></div>
+
+<div data-quiz="so-quiz"></div>
+
+<h2>9. 📌 Summary</h2>
+<ul>
+<li>Insertion sort: simple, O(n²), great for small/almost sorted data.</li>
+<li>Merge sort and quick sort: divide &amp; conquer, O(n log n).</li>
+<li>In Python: <code>sorted(…, key=…, reverse=…)</code>. Tuple keys for several criteria; negate for descending numbers.</li>
+<li>"Sort first" unlocks two pointers, binary search, greedy and interval sweeps.</li>
+</ul>
+<p><b>More LeetCode:</b> 88 Merge Sorted Array · 242 Valid Anagram (sort version) · 912 Sort an Array · 148 Sort List (merge sort on a linked list) · 56 Merge Intervals · 976 Largest Perimeter Triangle.</p>
+
+</div></main>
+<script src="data/11-sorting.js"></script>
+<script src="data/11-sorting.traces.js"></script>
+<script src="../assets/py-src.js"></script>
+<script src="../assets/player.js"></script>
+<script src="../assets/python.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

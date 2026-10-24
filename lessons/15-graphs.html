@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Graphs — DSA with Python</title>
+<link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/core.js"></script>
+</head>
+<body data-lesson="15">
+<main><div class="content">
+
+<div class="kicker">Lesson 15 · Trees &amp; graphs</div>
+<h1>Graphs</h1>
+<p class="lead">A graph is things (<b>nodes</b>) and connections (<b>edges</b>): cities and roads, users and friendships, courses and prerequisites,
+cells in a grid and their neighbours. A tree is just a graph without cycles. You already know the two main tools — DFS and BFS — and now you'll add
+a <code>visited</code> set and three famous algorithms.</p>
+
+<div class="callout key"><span class="title">🎯 After this lesson you can</span>
+<ul><li>turn any input (edge list, matrix, grid) into something you can traverse</li>
+<li>use BFS (shortest steps), DFS (explore / count groups), topological sort (dependencies), Dijkstra (weighted shortest path) and union-find (groups)</li>
+<li>solve LeetCode 200, 733, 1971, 547, 207, 210, 994, 1091, 743, 323</li></ul></div>
+
+<h2>1. How a graph is stored</h2>
+<table>
+<tr><th>Form</th><th>Python</th><th>When</th></tr>
+<tr><td><b>Adjacency list</b> (the usual one)</td><td><code>graph = {"A": ["B", "C"], "B": ["A"], …}</code></td><td>almost always — you can loop over a node's neighbours</td></tr>
+<tr><td>Edge list (how inputs often arrive)</td><td><code>edges = [[0, 1], [1, 2]]</code></td><td>convert it to an adjacency list first</td></tr>
+<tr><td>Adjacency matrix</td><td><code>m[i][j] == 1</code> if connected</td><td>small dense graphs; some LeetCode inputs</td></tr>
+<tr><td>Grid (implicit graph)</td><td><code>grid[r][c]</code> + 4 directions</td><td>mazes, islands, flood fill</td></tr>
+</table>
+<pre class="playground">
+from collections import defaultdict
+edges = [[0, 1], [1, 2], [3, 4]]
+graph = defaultdict(list)
+for a, b in edges:          # undirected: add both directions
+    graph[a].append(b)
+    graph[b].append(a)
+print(dict(graph))
+# directed (a → b): only graph[a].append(b)
+# weighted: graph[a].append((b, weight))
+</pre>
+<p>Words: <b>directed</b> (one-way arrows) or <b>undirected</b>; <b>weighted</b> (edges have costs); a <b>cycle</b> is a path back to where you started;
+a <b>connected component</b> is a group of nodes that can reach each other.</p>
+
+<h2>2. 👀 BFS — shortest number of steps</h2>
+<p>Exactly the tree BFS from lesson 13, plus one thing: graphs can have cycles, so remember which nodes you've seen (here the <code>dist</code> dict does that).
+BFS reaches nodes in order of distance: first everything 1 step away, then 2 steps…</p>
+<div data-viz="g-bfs"></div>
+<div class="callout pattern"><span class="title">🧩 Template: BFS</span>
+<pre><code>from collections import deque
+seen = {start}
+queue = deque([start])
+while queue:
+    node = queue.popleft()
+    for nei in graph[node]:
+        if nei not in seen:
+            seen.add(nei)              # mark when ADDING, not when popping
+            queue.append(nei)</code></pre></div>
+
+<h2>3. 👀 DFS — explore everything reachable</h2>
+<p>Go deep first, back up when stuck. The purple nodes are the current path on the call stack.</p>
+<div data-viz="g-dfs"></div>
+<div class="callout pattern"><span class="title">🧩 Template: DFS</span>
+<pre><code>visited = set()
+def dfs(node):
+    visited.add(node)
+    for nei in graph[node]:
+        if nei not in visited:
+            dfs(nei)
+
+# count connected groups = count how many times you START a new dfs
+groups = 0
+for node in graph:
+    if node not in visited:
+        dfs(node)
+        groups += 1</code></pre></div>
+
+<h2>4. 👀 Grids are graphs</h2>
+<p>Each cell is a node; its up/down/left/right neighbours are its edges. You never build the graph — the directions list from lesson 03 gives the neighbours.
+Here "visited" is done by changing the cell to <code>"#"</code>.</p>
+<div data-viz="g-islands"></div>
+
+<h2>5. 👀 Topological sort — order with dependencies</h2>
+<p>Courses with prerequisites form a <b>directed</b> graph (an arrow from "before" to "after"). An order that takes every course after its prerequisites is a
+<b>topological order</b>. Kahn's algorithm: count how many prerequisites each course still waits for; repeatedly take a course that waits for nothing.
+If you can't take all courses, there's a <b>cycle</b> (A needs B, B needs A).</p>
+<div data-viz="g-topo"></div>
+
+<h2>6. 👀 Dijkstra — shortest path with weights</h2>
+<p>When edges have different costs, BFS isn't enough. Dijkstra is BFS with a <b>heap</b> instead of a queue: always continue from the closest
+unfinished node. Below, A → B directly costs 4, but A → C → B costs 3.</p>
+<div data-viz="g-dijkstra"></div>
+<div class="callout pattern"><span class="title">🧩 Template: Dijkstra</span>
+<pre><code>import heapq
+dist = {start: 0}
+heap = [(0, start)]
+while heap:
+    d, node = heapq.heappop(heap)
+    if d > dist[node]:
+        continue                     # stale entry
+    for nei, w in graph[node]:
+        if d + w < dist.get(nei, float("inf")):
+            dist[nei] = d + w
+            heapq.heappush(heap, (d + w, nei))</code></pre>
+<p>O((V + E) log V). Weights must not be negative.</p></div>
+
+<h2>7. 👀 Union-find — which group am I in?</h2>
+<p>Every item points to a "boss"; following the bosses up leads to the group's root. Joining two groups = making one root the boss of the other.
+Great when connections arrive one by one, or to detect a cycle in an undirected graph (union of two items already in the same group).</p>
+<div data-viz="g-union-find"></div>
+
+<h2>8. Which graph tool?</h2>
+<table>
+<tr><th>The problem says…</th><th>Use</th></tr>
+<tr><td>fewest steps / moves / minimum number of …, all steps cost the same</td><td><b>BFS</b></td></tr>
+<tr><td>count islands / groups / provinces, can I reach…, explore everything</td><td><b>DFS</b> (or BFS)</td></tr>
+<tr><td>prerequisites, dependencies, order of tasks, "is there a cycle" (directed)</td><td><b>Topological sort</b></td></tr>
+<tr><td>cheapest / fastest path, weights on edges</td><td><b>Dijkstra</b></td></tr>
+<tr><td>connections added over time, "are these connected?", redundant edge</td><td><b>Union-find</b></td></tr>
+<tr><td>spreading from many places at once (fire, rot, infection)</td><td><b>Multi-source BFS</b></td></tr>
+</table>
+
+<h2>9. 🛠 Practice</h2>
+<p>Workbook: <code>workbook/15_graphs.py</code>.</p>
+<div data-problem="g-flood" data-n="1"></div>
+<div data-problem="g-islands" data-n="2"></div>
+<div data-problem="g-valid-path" data-n="3"></div>
+<div data-problem="g-provinces" data-n="4"></div>
+<div data-problem="g-oranges" data-n="5"></div>
+<div data-problem="g-binary-maze" data-n="6"></div>
+<div data-problem="g-course" data-n="7"></div>
+<div data-problem="g-order" data-n="8"></div>
+<div data-problem="g-network" data-n="9"></div>
+<div data-problem="g-components" data-n="10"></div>
+
+<div data-quiz="g-quiz"></div>
+
+<h2>10. 📌 Summary</h2>
+<ul>
+<li>Build an adjacency list first. Grids are graphs with a directions list.</li>
+<li>Always keep a <code>visited</code> set (or mark cells).</li>
+<li>BFS = shortest steps; DFS = explore / count groups; topological sort = dependencies; Dijkstra = weighted shortest path; union-find = dynamic groups.</li>
+<li>All traversals are O(V + E).</li>
+</ul>
+<p><b>More LeetCode:</b> 133 Clone Graph · 417 Pacific Atlantic Water Flow · 130 Surrounded Regions · 684 Redundant Connection · 127 Word Ladder (hard) · 787 Cheapest Flights Within K Stops · 1584 Min Cost to Connect All Points (minimum spanning tree).</p>
+
+</div></main>
+<script src="data/15-graphs.js"></script>
+<script src="data/15-graphs.traces.js"></script>
+<script src="../assets/py-src.js"></script>
+<script src="../assets/player.js"></script>
+<script src="../assets/python.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Greedy &amp; intervals — DSA with Python</title>
+<link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/core.js"></script>
+</head>
+<body data-lesson="18">
+<main><div class="content">
+
+<div class="kicker">Lesson 18 · Advanced techniques</div>
+<h1>Greedy algorithms &amp; intervals</h1>
+<p class="lead">A greedy algorithm makes the choice that looks best <b>right now</b> and never reconsiders. When it works, it's the simplest and
+fastest solution there is. The skill is knowing <i>when</i> it works — and intervals (meetings, ranges, bookings) are where greedy shines most.</p>
+
+<div class="callout key"><span class="title">🎯 After this lesson you can</span>
+<ul><li>write Kadane's algorithm and the "farthest reach" greedy</li>
+<li>check a greedy idea against a small counter-example before trusting it</li>
+<li>solve interval problems with "sort, then sweep"</li>
+<li>solve LeetCode 53, 55, 455, 122, 134, 763, 56, 57, 435, 252, 253</li></ul></div>
+
+<h2>1. Greedy vs DP</h2>
+<table>
+<tr><th></th><th>Greedy</th><th>Dynamic programming</th></tr>
+<tr><td>Idea</td><td>pick the best-looking option now</td><td>try all options for each sub-problem, keep the best</td></tr>
+<tr><td>Speed</td><td>usually O(n) or O(n log n)</td><td>usually O(n²) or O(n × something)</td></tr>
+<tr><td>Correct?</td><td>only if a "greedy choice is always safe" argument exists</td><td>always (if the recurrence is right)</td></tr>
+</table>
+<p><b>How to check a greedy idea:</b> try to break it with a tiny example. Coins [1, 3, 4] and amount 6 break "biggest coin first" (4+1+1 vs 3+3).
+If you can't break it and can explain why the choice is safe ("taking this never makes things worse"), go greedy.</p>
+
+<h2>2. 👀 Kadane: the best contiguous sum</h2>
+<p>Walk once. At each number decide: <b>carry</b> the run you have, or <b>start fresh</b> here? If the run so far is negative it can only hurt, so drop it.</p>
+<div data-viz="gr-kadane"></div>
+
+<h2>3. 👀 Jump game: only the farthest point matters</h2>
+<p>You don't need to know <i>which</i> jumps to make. Track the farthest index you could reach so far; if you ever stand beyond it, you're stuck.</p>
+<div data-viz="gr-jump"></div>
+
+<h2>4. 👀 Intervals: sort, then sweep</h2>
+<p>An interval is <code>[start, end]</code>. Almost every interval problem starts with <b>sorting</b> — then overlapping intervals sit next to each other
+and one left-to-right sweep handles everything.</p>
+<div data-viz="iv-merge"></div>
+<div class="callout pattern"><span class="title">🧩 Interval templates</span>
+<pre><code># merge overlapping
+intervals.sort()                          # by start
+merged = []
+for start, end in intervals:
+    if merged and start <= merged[-1][1]: # overlaps the last one
+        merged[-1][1] = max(merged[-1][1], end)
+    else:
+        merged.append([start, end])
+
+# keep the most non-overlapping → sort by END, keep the earliest-ending
+# how many at the same time (rooms) → sort by start + min-heap of end times</code></pre>
+<p><b>Signals:</b> meetings, bookings, ranges, "overlap", "merge", "minimum number of rooms / arrows / removals", timelines.</p></div>
+
+<h2>5. Common greedy patterns</h2>
+<table>
+<tr><th>Pattern</th><th>Example</th></tr>
+<tr><td>Sort, then match smallest with smallest</td><td>assign cookies, boats to save people</td></tr>
+<tr><td>Keep a running best / reach</td><td>Kadane, jump game, gas station</td></tr>
+<tr><td>Take every small gain</td><td>stock II</td></tr>
+<tr><td>Earliest end first</td><td>non-overlapping intervals, minimum arrows</td></tr>
+<tr><td>Heap of what's "in progress"</td><td>meeting rooms II, task scheduling</td></tr>
+<tr><td>Last occurrence of each item</td><td>partition labels</td></tr>
+</table>
+
+<h2>6. 🛠 Practice</h2>
+<p>Workbook: <code>workbook/18_greedy_intervals.py</code>.</p>
+<div data-problem="gr-max-sub" data-n="1"></div>
+<div data-problem="gr-jump" data-n="2"></div>
+<div data-problem="gr-cookies" data-n="3"></div>
+<div data-problem="gr-stock2" data-n="4"></div>
+<div data-problem="gr-gas" data-n="5"></div>
+<div data-problem="gr-labels" data-n="6"></div>
+<div data-problem="iv-meetings" data-n="7"></div>
+<div data-problem="iv-merge" data-n="8"></div>
+<div data-problem="iv-insert" data-n="9"></div>
+<div data-problem="iv-erase" data-n="10"></div>
+<div data-problem="iv-rooms" data-n="11"></div>
+
+<div data-quiz="gr-quiz"></div>
+
+<h2>7. 📌 Summary</h2>
+<ul>
+<li>Greedy = best choice now, never undo. Fast, but prove it (or at least try to break it) first.</li>
+<li>Kadane: drop a negative running sum. Jump game: track the farthest reach.</li>
+<li>Intervals: sort by start to merge; sort by end to keep the most; heap of ends to count rooms.</li>
+</ul>
+<p><b>More LeetCode:</b> 45 Jump Game II · 452 Minimum Arrows to Burst Balloons · 881 Boats to Save People · 621 Task Scheduler · 846 Hand of Straights · 1029 Two City Scheduling · 986 Interval List Intersections.</p>
+
+</div></main>
+<script src="data/18-greedy-intervals.js"></script>
+<script src="data/18-greedy-intervals.traces.js"></script>
+<script src="../assets/py-src.js"></script>
+<script src="../assets/player.js"></script>
+<script src="../assets/python.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

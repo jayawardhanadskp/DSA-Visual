@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Backtracking — DSA with Python</title>
+<link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/core.js"></script>
+</head>
+<body data-lesson="16">
+<main><div class="content">
+
+<div class="kicker">Lesson 16 · Advanced techniques</div>
+<h1>Backtracking</h1>
+<p class="lead">"Return <b>all</b> the ways…" — all subsets, all orderings, all valid boards. Backtracking builds a solution one choice at a time,
+explores everything that follows from that choice, then <b>undoes</b> the choice and tries the next one. It's a DFS over a tree of decisions.</p>
+
+<div class="callout key"><span class="title">🎯 After this lesson you can</span>
+<ul><li>draw the decision tree of a problem before coding</li>
+<li>write the choose → explore → un-choose template from memory</li>
+<li>tell subsets, combinations and permutations apart, and prune branches</li>
+<li>solve LeetCode 78, 46, 77, 39, 17, 22, 79, 52, 131</li></ul></div>
+
+<h2>1. The real-life picture</h2>
+<p>You're in a maze. At every fork, pick a path. If you hit a dead end, walk <b>back</b> to the last fork and try the next path. To find
+<i>every</i> exit, keep doing this until all paths are tried. Walking back is "backtracking"; remembering which way you took is the <code>path</code>.</p>
+
+<h2>2. 👀 Subsets: the decision tree</h2>
+<p>Each node of the call tree is a <code>path</code> (the choices so far). Every node is recorded as one subset. Watch <code>path</code> grow with
+<code>append</code> and shrink with <code>pop</code> — the shrinking is the "back" in backtracking.</p>
+<div data-viz="bt-subsets"></div>
+<div data-tracetable="bt-subsets" data-line="6" data-vars="path" data-max="8"
+  data-intro="In which order are the subsets recorded? Write <code>path</code> every time line 6 runs (like <code>[1, 2]</code>)."></div>
+
+<div class="callout pattern"><span class="title">🧩 Template: backtracking</span>
+<pre><code>result = []
+path = []
+
+def backtrack(state):
+    if is_complete(path):            # or: record at every node (subsets)
+        result.append(path[:])       # COPY!
+        return
+    for choice in choices(state):
+        if not valid(choice):        # pruning: skip hopeless branches
+            continue
+        path.append(choice)          # 1. choose
+        backtrack(next_state)        # 2. explore
+        path.pop()                   # 3. un-choose
+
+backtrack(start_state)</code></pre>
+<p><b>Signals:</b> "all subsets / combinations / permutations / partitions", "generate all valid …", "every way to …", puzzles (sudoku, N-Queens, word search), and small input sizes (n ≤ 15–20).</p></div>
+
+<h2>3. Three shapes to recognise</h2>
+<table>
+<tr><th>Shape</th><th>Loop</th><th>Recurse with</th><th>Count</th></tr>
+<tr><td><b>Subsets</b> (order doesn't matter, any size)</td><td><code>for i in range(start, n)</code></td><td><code>i + 1</code></td><td>2ⁿ</td></tr>
+<tr><td><b>Combinations</b> (choose k)</td><td>same, stop at size k</td><td><code>i + 1</code> (or <code>i</code> if reuse allowed)</td><td>C(n, k)</td></tr>
+<tr><td><b>Permutations</b> (order matters)</td><td><code>for i in range(n)</code>, skip used</td><td>mark <code>used[i]</code></td><td>n!</td></tr>
+</table>
+
+<h2>4. 👀 Permutations</h2>
+<div data-viz="bt-permutations"></div>
+
+<h2>5. 👀 Pruning: N-Queens</h2>
+<p>Place one queen per row. Before placing, check if the square is attacked (column, or one of the two diagonals). If every square in a row is attacked,
+that whole branch is dead — undo the last queen and try the next column. Pruning is what makes backtracking fast enough.</p>
+<div data-viz="bt-queens"></div>
+<p>Trick: all squares on one "\" diagonal have the same <code>r - c</code>, and on one "/" diagonal the same <code>r + c</code>. Three sets make the attack check O(1).</p>
+
+<h2>6. Common mistakes</h2>
+<table>
+<tr><th>Mistake</th><th>Fix</th></tr>
+<tr><td><code>result.append(path)</code></td><td><code>result.append(path[:])</code> — copy, because path keeps changing.</td></tr>
+<tr><td>Forgetting to un-choose (pop / restore the cell / remove from the set)</td><td>Every change before the recursive call needs an undo after it.</td></tr>
+<tr><td>Duplicate results like [1, 2] and [2, 1] in subsets</td><td>Loop from <code>start</code>, not from 0.</td></tr>
+<tr><td>Input has duplicates (LC 90, 47)</td><td>Sort first, then skip <code>nums[i] == nums[i - 1]</code> at the same level.</td></tr>
+</table>
+
+<h2>7. 🛠 Practice</h2>
+<p>Draw the decision tree for the first 2 levels on paper before every problem. Workbook: <code>workbook/16_backtracking.py</code>.</p>
+<div data-problem="bt-subsets" data-n="1"></div>
+<div data-problem="bt-combine" data-n="2"></div>
+<div data-problem="bt-permute" data-n="3"></div>
+<div data-problem="bt-comb-sum" data-n="4"></div>
+<div data-problem="bt-letters" data-n="5"></div>
+<div data-problem="bt-parens" data-n="6"></div>
+<div data-problem="bt-palindromes" data-n="7"></div>
+<div data-problem="bt-word-search" data-n="8"></div>
+<div data-problem="bt-queens" data-n="9"></div>
+
+<div data-quiz="bt-quiz"></div>
+
+<h2>8. 📌 Summary</h2>
+<ul>
+<li>Backtracking = DFS over a decision tree: choose → explore → un-choose.</li>
+<li>Record a <b>copy</b> of the path. Undo every change.</li>
+<li>Subsets / combinations loop from <code>start</code>; permutations loop over everything unused.</li>
+<li>Exponential by nature — pruning makes it practical.</li>
+</ul>
+<p><b>More LeetCode:</b> 90 Subsets II · 47 Permutations II · 40 Combination Sum II · 93 Restore IP Addresses · 51 N-Queens · 37 Sudoku Solver (hard) · 212 Word Search II (hard, with a trie — lesson 19).</p>
+
+</div></main>
+<script src="data/16-backtracking.js"></script>
+<script src="data/16-backtracking.traces.js"></script>
+<script src="../assets/py-src.js"></script>
+<script src="../assets/player.js"></script>
+<script src="../assets/python.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

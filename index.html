@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DSA with Python — a visual course</title>
+<link rel="stylesheet" href="assets/style.css">
+<script src="assets/core.js"></script>
+</head>
+<body>
+<main><div class="content">
+
+<div class="hero">
+<div class="kicker">A visual, hands-on course · for a Flutter / Dart developer</div>
+<h1>Data Structures &amp; Algorithms with Python</h1>
+<p class="lead">Not another video. Here you <b>watch real Python run line by line</b>, <b>predict</b> what happens next, learn each
+<b>pattern</b> with a template, <b>write the code yourself</b> against tests — and <b>review</b> it until it sticks.</p>
+<p><a class="btn primary" id="continue" href="lessons/00-start-here.html" style="text-decoration:none;display:inline-block;padding:9px 16px;font-size:16px">Start lesson 00 →</a></p>
+</div>
+
+<div class="cards" id="stats"></div>
+
+<h2>🔁 Due for review today</h2>
+<div id="reviews"></div>
+
+<h2>The method (every lesson)</h2>
+<div class="method">
+<div class="m"><span class="n">1</span><b>👀 SEE</b><span>Step through the algorithm on real data.</span></div>
+<div class="m"><span class="n">2</span><b>🧠 PREDICT</b><span>Click the next line, fill trace tables.</span></div>
+<div class="m"><span class="n">3</span><b>🧩 PATTERN</b><span>Template + the signals that trigger it.</span></div>
+<div class="m"><span class="n">4</span><b>🛠 BUILD</b><span>Code it in the browser; tests check you.</span></div>
+<div class="m"><span class="n">5</span><b>🔁 REVIEW</b><span>Solve it again after 1, 3, 7, 21 days.</span></div>
+</div>
+
+<h2>Roadmap</h2>
+<p>About 10–12 weeks at 60–90 minutes a day. Go in order — every lesson uses the ones before it.</p>
+<div class="roadmap" id="roadmap"></div>
+
+<h2>How to use this course</h2>
+<div class="cards">
+<div class="card"><h4>📂 Open it</h4><p>Double-click <code>index.html</code>, or (recommended) in this folder run <code>python3 -m http.server 8000</code> and open <code>http://localhost:8000</code>.</p></div>
+<div class="card"><h4>▶ Visualizers</h4><p>Click a visualizer, then use <kbd>→</kbd> / <kbd>←</kbd>. <b>🧠 Predict mode</b> makes you guess the next line. <b>✏️ Edit &amp; visualize</b> runs your own changes.</p></div>
+<div class="card"><h4>🐍 Python in the browser</h4><p>The practice editors run real Python (Pyodide). The first run downloads it once (~10 MB, needs internet), then it's cached. <kbd>Ctrl</kbd>/<kbd>⌘</kbd>+<kbd>Enter</kbd> runs tests.</p></div>
+<div class="card"><h4>🎬 Watch my code</h4><p>A test fails and you don't know why? Press 🎬 under a problem to step through <b>your</b> code on the first test.</p></div>
+<div class="card"><h4>💻 Offline / VS Code</h4><p>Every problem is also in <code>workbook/</code>: <code>python3 workbook/05_two_pointers.py</code> prints ✅ / ❌. Solutions are in <code>workbook/solutions/</code>.</p></div>
+<div class="card"><h4>💾 Progress</h4><p>Your code, solved problems and review dates are saved in this browser (localStorage). Use the same browser each time.</p></div>
+</div>
+
+<p style="margin-top:2em;font-size:14px;color:var(--ink-3)">Reset all progress in this browser: <button class="btn" id="reset">Reset…</button></p>
+
+</div></main>
+<script>
+  DSA.onHome = ({ BASE, lessonUrl }) => {
+    const { COURSE, Store, esc } = DSA
+    const data = Store.get()
+    const doneLessons = COURSE.filter((l) => data.lessons[l.id]).length
+    const solved = Object.keys(data.problems).length
+    const due = Store.dueReviews()
+    const next = COURSE.find((l) => !data.lessons[l.id])
+    const cont = document.getElementById('continue')
+    if (next && doneLessons > 0) {
+      cont.textContent = `Continue: ${next.id} · ${next.title} →`
+      cont.href = lessonUrl(next)
+    } else if (!next) {
+      cont.textContent = 'All lessons done — go to the pattern playbook →'
+      cont.href = lessonUrl(COURSE[COURSE.length - 1])
+    }
+    document.getElementById('stats').innerHTML = `
+      <div class="card"><h4>${doneLessons} / ${COURSE.length} lessons</h4><div class="progressbar"><div style="width:${(doneLessons / COURSE.length) * 100}%"></div></div></div>
+      <div class="card"><h4>${solved} problems solved</h4><p>Each one comes back for review.</p></div>
+      <div class="card"><h4>${due.length} review${due.length === 1 ? '' : 's'} due</h4><p>${due.length ? 'Do these first today.' : 'Nothing due — learn something new.'}</p></div>`
+    document.getElementById('reviews').innerHTML = due.length
+      ? '<p>Open each one, press <b>↺ Start fresh</b>, and solve it again without looking. Passing all tests schedules the next review.</p><div class="review-list">' +
+        due
+          .map((p) => `<a href="${BASE}lessons/${esc(p.page || '')}#p-${esc(p.pid)}"><span>🔁</span><span><b>${esc(p.title)}</b> <small style="color:var(--ink-3)">lesson ${esc(p.lesson)}</small></span></a>`)
+          .join('') +
+        '</div>'
+      : '<p style="color:var(--ink-2)">No reviews due. Solve problems in the lessons and they will appear here after a day.</p>'
+    let stage = ''
+    document.getElementById('roadmap').innerHTML = COURSE.map((l) => {
+      let head = ''
+      if (l.stage !== stage) {
+        stage = l.stage
+        head = `<div class="stage">${esc(stage)}</div>`
+      }
+      const isDone = !!data.lessons[l.id]
+      const solvedHere = Object.values(data.problems).filter((p) => p.lesson === l.id).length
+      return `${head}<a class="lesson${isDone ? ' done' : ''}" href="${lessonUrl(l)}"><span class="n">${l.id}</span><span>${esc(l.title)}<small>${esc(l.blurb)}</small></span><span class="st">${isDone ? '✓ done' : solvedHere ? solvedHere + ' solved' : ''}</span></a>`
+    }).join('')
+    const reset = document.getElementById('reset')
+    reset.onclick = () => {
+      if (!reset.dataset.armed) {
+        reset.dataset.armed = '1'
+        reset.textContent = 'Click again to erase everything'
+        setTimeout(() => {
+          delete reset.dataset.armed
+          reset.textContent = 'Reset…'
+        }, 4000)
+        return
+      }
+      Store.reset()
+      location.reload()
+    }
+  }
+</script>
+<script src="assets/py-src.js"></script>
+<script src="assets/player.js"></script>
+<script src="assets/python.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>

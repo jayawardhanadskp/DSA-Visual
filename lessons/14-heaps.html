@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Heaps — DSA with Python</title>
+<link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/core.js"></script>
+</head>
+<body data-lesson="14">
+<main><div class="content">
+
+<div class="kicker">Lesson 14 · Trees &amp; graphs</div>
+<h1>Heaps &amp; priority queues</h1>
+<p class="lead">A heap answers one question very fast: <b>"what is the smallest item right now?"</b> — even while items keep arriving and leaving.
+It's the engine behind "top k", "k-th largest", scheduling, merging sorted lists, and Dijkstra's shortest path (next lesson).</p>
+
+<div class="callout key"><span class="title">🎯 After this lesson you can</span>
+<ul><li>explain how a heap is a tree stored in a plain list</li>
+<li>use <code>heapq</code>: <code>heappush</code>, <code>heappop</code>, <code>heapify</code>, <code>nlargest</code>, max-heap by negating, tuples as priorities</li>
+<li>use the "heap of size k" and "two heaps" patterns</li>
+<li>solve LeetCode 215, 1046, 703, 973, 692, 23, 295</li></ul></div>
+
+<h2>1. The real-life picture</h2>
+<p>A hospital emergency room isn't first-come-first-served: the most urgent patient goes first. That's a <b>priority queue</b>.
+A heap is the data structure that makes "add a patient" and "take the most urgent one" both O(log n).</p>
+<table>
+<tr><th>Structure</th><th>add</th><th>get &amp; remove the smallest</th></tr>
+<tr><td>unsorted list</td><td>O(1)</td><td>O(n) — search everything</td></tr>
+<tr><td>sorted list</td><td>O(n) — shift to insert</td><td>O(1)</td></tr>
+<tr><td><b>heap</b></td><td><b>O(log n)</b></td><td><b>O(log n)</b> (and peeking is O(1))</td></tr>
+</table>
+
+<h2>2. A tree hiding in a list</h2>
+<p>A (min-)heap is a binary tree with one rule: <b>every parent is ≤ its children</b>. So the smallest item is always at the top. The tree is always
+filled level by level, left to right, so it fits perfectly in a list with no pointers:</p>
+<pre><code class="plain">index:    0  1  2  3  4  5          children of i:  2*i + 1 and 2*i + 2
+heap:   [ 1, 3, 2, 5, 9, 8 ]        parent of i:    (i - 1) // 2
+
+              1           ← heap[0]: always the smallest
+            /   \
+           3     2
+          / \   /
+         5   9 8</code></pre>
+<p>It is <b>not</b> sorted (3 is before 2) — only the parent/child rule holds. That's why it's cheaper to maintain than a sorted list.</p>
+
+<h2>3. 👀 Push: bubble up</h2>
+<p>Put the new item at the end (the next free spot), then swap it with its parent while it's smaller. At most one swap per level → O(log n).</p>
+<div data-viz="heap-push"></div>
+
+<h2>4. 👀 Pop: sink down</h2>
+<p>Take the top. Move the <b>last</b> item to the top (to keep the shape), then swap it with its <b>smaller</b> child while it's bigger. O(log n).</p>
+<div data-viz="heap-pop"></div>
+
+<h2>5. In real Python: <code>heapq</code></h2>
+<p>You never write push/pop yourself — <code>heapq</code> does exactly the above on a normal list.</p>
+<pre class="playground">
+import heapq
+heap = []
+for x in [5, 3, 8, 1, 9, 2]:
+    heapq.heappush(heap, x)
+print(heap, heap[0])                  # heap[0] = smallest (peek, O(1))
+print(heapq.heappop(heap), heap)      # pops 1
+
+nums = [7, 2, 9, 4]
+heapq.heapify(nums)                   # list → heap in O(n), in place
+print(nums)
+
+# max-heap: push negatives
+mx = []
+for x in [5, 3, 8]:
+    heapq.heappush(mx, -x)
+print(-heapq.heappop(mx))             # 8
+
+# priorities with tuples: (priority, item) — compared item by item
+tasks = []
+heapq.heappush(tasks, (2, "write tests"))
+heapq.heappush(tasks, (1, "fix bug"))
+heapq.heappush(tasks, (3, "coffee"))
+print(heapq.heappop(tasks))           # (1, 'fix bug')
+
+print(heapq.nlargest(2, [4, 1, 7, 3]), heapq.nsmallest(2, [4, 1, 7, 3]))
+</pre>
+<div class="callout dart"><span class="title">Dart → Python</span>
+Dart has <code>PriorityQueue</code> in <code>package:collection</code> with a comparator. Python's <code>heapq</code> is always a <b>min</b>-heap on a plain list;
+use negatives for max, and tuples for "priority + data".</div>
+
+<h2>6. 👀 Pattern: heap of size k</h2>
+<p>To find the k <b>largest</b> items, keep a <b>min</b>-heap of size k: whenever it grows past k, pop the smallest. At the end it holds the k largest,
+and <code>heap[0]</code> is the k-th largest. O(n log k), and it works on a stream that never ends.</p>
+<div data-viz="heap-topk"></div>
+<div class="callout pattern"><span class="title">🧩 Heap templates</span>
+<pre><code># k largest (min-heap of size k)
+heap = []
+for x in items:
+    heapq.heappush(heap, x)
+    if len(heap) > k:
+        heapq.heappop(heap)
+
+# repeatedly take the best (max-heap via negation)
+heap = [-x for x in items]; heapq.heapify(heap)
+while heap:
+    best = -heapq.heappop(heap)
+    ...                               # maybe push new items back
+
+# merge k sorted things: heap of (value, which_list, index)
+
+# running median: two heaps (max-heap for the low half, min-heap for the high half)</code></pre>
+<p><b>Signals:</b> "k largest / smallest / closest / most frequent", "k-th", "repeatedly pick the biggest/smallest", "merge k sorted", "median of a stream", "schedule by priority", shortest path with weights.</p></div>
+
+<h2>7. 🛠 Practice</h2>
+<p>Workbook: <code>workbook/14_heaps.py</code>.</p>
+<div data-problem="hp-kth" data-n="1"></div>
+<div data-problem="hp-stones" data-n="2"></div>
+<div data-problem="hp-kth-class" data-n="3"></div>
+<div data-problem="hp-closest" data-n="4"></div>
+<div data-problem="hp-top-words" data-n="5"></div>
+<div data-problem="hp-merge-k" data-n="6"></div>
+<div data-problem="hp-median" data-n="7"></div>
+
+<div data-quiz="hp-quiz"></div>
+
+<h2>8. 📌 Summary</h2>
+<ul>
+<li>A heap = a complete binary tree in a list; parent ≤ children; the minimum is <code>heap[0]</code>.</li>
+<li>push / pop are O(log n), peek O(1), heapify O(n).</li>
+<li>Max-heap: negate. Priorities: tuples. Top k: heap of size k. Median: two heaps.</li>
+</ul>
+<p><b>More LeetCode:</b> 347 Top K Frequent Elements (heap version) · 621 Task Scheduler · 1642 Furthest Building You Can Reach · 355 Design Twitter · 502 IPO (hard) · 632 Smallest Range Covering K Lists (hard).</p>
+
+</div></main>
+<script src="data/14-heaps.js"></script>
+<script src="data/14-heaps.traces.js"></script>
+<script src="../assets/py-src.js"></script>
+<script src="../assets/player.js"></script>
+<script src="../assets/python.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

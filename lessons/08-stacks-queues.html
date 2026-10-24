@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stacks &amp; queues — DSA with Python</title>
+<link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/core.js"></script>
+</head>
+<body data-lesson="08">
+<main><div class="content">
+
+<div class="kicker">Lesson 08 · Linear structures</div>
+<h1>Stacks &amp; queues</h1>
+<p class="lead">Two simple structures with one rule each. A <b>stack</b>: the last thing in is the first out (LIFO). A <b>queue</b>: the first
+thing in is the first out (FIFO). The rule is the whole point — it tells you <i>which</i> item to deal with next.</p>
+
+<div class="callout key"><span class="title">🎯 After this lesson you can</span>
+<ul><li>use a list as a stack and a <code>deque</code> as a queue, with O(1) operations</li>
+<li>recognise "stack problems": matching, nesting, undo, "previous/next greater"</li>
+<li>use a <b>monotonic stack</b></li>
+<li>solve LeetCode 20, 155, 844, 150, 232, 933, 739, 394</li></ul></div>
+
+<h2>1. The real-life picture</h2>
+<div class="two-col">
+<div class="card"><h4>📚 Stack = a pile of plates</h4><p>You put plates on top and take from the top. Undo (Ctrl+Z), the browser's back button,
+and Flutter's <code>Navigator.push</code> / <code>pop</code> are stacks!</p></div>
+<div class="card"><h4>🚶 Queue = a line at the bank</h4><p>New people join at the back, the person at the front is served first. Print jobs, messages,
+and BFS in graphs (lesson 15) are queues.</p></div>
+</div>
+
+<h2>2. In Python</h2>
+<div class="two-col">
+<div><div class="label">stack = a list</div>
+<pre><code>stack = []
+stack.append(1)      # push      O(1)
+stack.append(2)
+top = stack[-1]      # peek      O(1)
+x = stack.pop()      # pop → 2   O(1)
+if stack: ...        # not empty?</code></pre></div>
+<div><div class="label">queue = a deque</div>
+<pre><code>from collections import deque
+q = deque()
+q.append(1)          # join at back   O(1)
+q.append(2)
+front = q[0]         # peek           O(1)
+x = q.popleft()      # leave → 1      O(1)
+if q: ...            # not empty?</code></pre></div>
+</div>
+<div class="callout dart"><span class="title">Dart → Python</span>
+Dart's <code>List</code> works as a stack (<code>add</code>/<code>removeLast</code>), and <code>Queue</code> from <code>dart:collection</code> is a deque
+(<code>addLast</code>/<code>removeFirst</code>). In Python, <b>never</b> use <code>list.pop(0)</code> as a queue — it's O(n) (lesson 03).</div>
+
+<h2>3. 👀 Stack: matching brackets</h2>
+<p>The bracket opened <b>last</b> must close <b>first</b>. Whenever "the most recent unfinished thing" matters, think stack.</p>
+<div data-viz="st-parens"></div>
+<div data-tracetable="st-parens" data-line="5" data-vars="ch, stack" data-max="8"
+  data-intro="Before line 5 (<code>if ch in &quot;([{&quot;</code>) each time, what are <code>ch</code> and <code>stack</code>? Input <code>&quot;{[()()]}&quot;</code>."></div>
+
+<h2>4. 👀 Queue: first come, first served</h2>
+<p>Jobs take turns: each gets 2 units of time, and if it isn't finished it goes to the <b>back</b> of the line.</p>
+<div data-viz="q-round-robin"></div>
+
+<h2>5. 👀 The monotonic stack</h2>
+<p>"For each day, how long until a warmer day?" Brute force looks forward from every day: O(n²). Better: days that are still <b>waiting</b> sit on a stack.
+When a warmer day arrives, it answers every waiting day that is colder (popping them). The stack's temperatures always go <b>down</b> from bottom to top
+— that's why it's called <i>monotonic</i>.</p>
+<div data-viz="st-temps"></div>
+<div class="callout pattern"><span class="title">🧩 Template: monotonic stack ("next greater")</span>
+<pre><code>answer = [default] * n
+stack = []                                   # indexes still waiting
+for i, x in enumerate(nums):
+    while stack and nums[stack[-1]] < x:     # x answers the smaller ones
+        j = stack.pop()
+        answer[j] = ...                      # e.g. i - j, or x
+    stack.append(i)</code></pre>
+<p><b>Signals:</b> "next greater / smaller element", "days until", "stock span", "largest rectangle", "remove digits to make the smallest number".</p></div>
+
+<div class="callout pattern"><span class="title">🧩 When to use which</span>
+<p><b>Stack signals:</b> matching pairs, nesting (<code>3[a2[c]]</code>), undo / backspace, "most recent", evaluate expressions, DFS without recursion.</p>
+<p><b>Queue signals:</b> "in order of arrival", process level by level, BFS / shortest steps, "the last N seconds", round robin.</p></div>
+
+<h2>6. 🛠 Practice</h2>
+<p>Workbook file: <code>workbook/08_stacks_queues.py</code>.</p>
+<div data-problem="st-valid" data-n="1"></div>
+<div data-problem="st-min-stack" data-n="2"></div>
+<div data-problem="st-backspace" data-n="3"></div>
+<div data-problem="st-rpn" data-n="4"></div>
+<div data-problem="st-my-queue" data-n="5"></div>
+<div data-problem="st-recent" data-n="6"></div>
+<div data-problem="st-daily" data-n="7"></div>
+<div data-problem="st-decode" data-n="8"></div>
+
+<div data-quiz="st-quiz"></div>
+
+<h2>7. 📌 Summary</h2>
+<ul>
+<li>Stack: <code>append</code> / <code>pop()</code> / <code>[-1]</code> on a list. Queue: <code>append</code> / <code>popleft()</code> on a <code>deque</code>. All O(1).</li>
+<li>Stacks handle "most recent first": matching, nesting, undo. Queues handle "oldest first": order of arrival, BFS.</li>
+<li>Monotonic stack: each item is pushed once and popped once → O(n) for "next greater" problems.</li>
+</ul>
+<p><b>More LeetCode:</b> 496 Next Greater Element I · 503 Next Greater Element II · 901 Online Stock Span · 71 Simplify Path · 84 Largest Rectangle in Histogram (hard) · 225 Stack using Queues.</p>
+
+</div></main>
+<script src="data/08-stacks-queues.js"></script>
+<script src="data/08-stacks-queues.traces.js"></script>
+<script src="../assets/py-src.js"></script>
+<script src="../assets/player.js"></script>
+<script src="../assets/python.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

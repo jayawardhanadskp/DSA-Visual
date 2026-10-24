@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Recursion — DSA with Python</title>
+<link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/core.js"></script>
+</head>
+<body data-lesson="10">
+<main><div class="content">
+
+<div class="kicker">Lesson 10 · Recursion &amp; searching</div>
+<h1>Recursion</h1>
+<p class="lead">A recursive function solves a problem by calling <b>itself</b> on a smaller version of the same problem. It's the key to trees,
+graphs, backtracking, divide &amp; conquer and dynamic programming — half of this course. Most people find it confusing because they try to follow every
+call in their head. You'll learn to <b>see</b> the calls first, and then to <b>stop</b> following them.</p>
+
+<div class="callout key"><span class="title">🎯 After this lesson you can</span>
+<ul><li>explain the call stack and what "waiting for a return value" means</li>
+<li>write any recursive function with the 3 questions</li>
+<li>draw a recursion tree and get the Big-O from it</li>
+<li>solve factorial, power, flatten, Tower of Hanoi</li></ul></div>
+
+<h2>1. The real-life picture</h2>
+<p>You're in a cinema queue and want to know your position. You ask the person in front: "what's your position?". They don't know either, so
+they ask the person in front of <i>them</i>… until the first person says "I'm number 1" (<b>base case</b>). Then the answers come back:
+"2", "3", … each person adds one. Nobody needed to count the whole queue.</p>
+
+<h2>2. 👀 The call stack</h2>
+<p>Every call gets its <b>own</b> copy of its variables (its own <code>n</code>), stacked on top of the waiting calls. Watch the
+<b>call stack</b> panel grow on the way down and shrink on the way up, and the <b>call tree</b> on the right: blue = waiting, orange = running,
+green = finished (with its return value).</p>
+<div data-viz="rec-factorial"></div>
+<div class="callout dart"><span class="title">It's the same stack as in Flutter</span>
+When a Flutter exception prints a stack trace, those lines <i>are</i> the call stack: which function called which, newest at the top.
+Python's limit is about 1000 nested calls — <code>RecursionError: maximum recursion depth exceeded</code> means you probably forgot the base case.</div>
+
+<h2>3. The 3 questions (write every recursive function this way)</h2>
+<div class="callout pattern"><span class="title">🧩 Template: recursion</span>
+<pre><code>def solve(problem):
+    # 1. BASE CASE: the smallest version I can answer directly
+    if problem is tiny:
+        return direct_answer
+    # 2. SMALLER SUB-PROBLEM: trust that solve() works for it ("leap of faith")
+    sub_answer = solve(smaller_problem)
+    # 3. COMBINE: build my answer from the sub-answer
+    return combine(sub_answer)</code></pre></div>
+<p>Example — sum of a list: (1) the sum of an empty list is 0; (2) the rest of the list is smaller; (3) first item + sum of the rest.</p>
+<div data-viz="rec-sum"></div>
+<p><b>The leap of faith:</b> when you write <code>total(nums[1:])</code>, don't trace it. Assume it returns the right answer for the rest of the list,
+and only check that <i>your</i> line combines it correctly. This is exactly like using a function from a library — you don't read its code, you trust its contract.</p>
+
+<h2>4. 👀 Two calls per call → a tree</h2>
+<p>When a function calls itself twice, the calls form a <b>tree</b>. Watch fib(5): the dashed grey nodes are calls that haven't happened yet.
+Notice that fib(3) is computed <b>twice</b> and fib(2) <b>three times</b>.</p>
+<div data-viz="rec-fib"></div>
+<p>Each level has up to twice as many calls as the one above → about 2ⁿ calls → <b>O(2ⁿ)</b>. fib(40) needs over 300 million calls.
+In lesson 17 you'll add a small dict that remembers answers, and it becomes O(n). The tree view is how you'll <i>see</i> that.</p>
+
+<div data-tracetable="rec-fib" data-line="2" data-vars="n" data-max="8"
+  data-intro="In what order are the calls made? Write the value of <code>n</code> each time line 2 (the base-case check) is about to run — the first 8 calls of fib(5)."></div>
+
+<h2>5. 👀 Halving → only log n calls</h2>
+<p>If each call makes the problem <b>half</b> as big (and makes only <b>one</b> recursive call), there are only log₂ n calls. 2¹⁰ needs 5 calls instead of 10;
+2<sup>1,000,000</sup> needs 21. This idea — split the problem in half — is the heart of binary search (lesson 12) and merge sort (lesson 11).</p>
+<div data-viz="rec-power"></div>
+
+<h2>6. Big-O of recursion</h2>
+<table>
+<tr><th>Shape</th><th>Example</th><th>Time</th><th>Space (stack depth)</th></tr>
+<tr><td>one call, n − 1</td><td>factorial, sum of list</td><td>O(n)</td><td>O(n)</td></tr>
+<tr><td>one call, n / 2</td><td>fast power, binary search</td><td>O(log n)</td><td>O(log n)</td></tr>
+<tr><td>two calls, n − 1</td><td>naive fib, Hanoi, all subsets</td><td>O(2ⁿ)</td><td>O(n)</td></tr>
+<tr><td>two calls, n / 2, plus O(n) work</td><td>merge sort</td><td>O(n log n)</td><td>O(n)</td></tr>
+</table>
+<p>Rule of thumb: <b>time ≈ number of calls × work per call</b>, and <b>space ≈ the deepest the stack gets</b>.</p>
+
+<h2>7. Recursion vs loops</h2>
+<p>Any loop can be written as recursion and the other way round. Use a loop when the problem is a straight line (walk a list). Use recursion when the
+problem <b>branches</b> or is <b>nested</b>: trees, nested lists, "try every choice". Python has no tail-call optimisation, so very deep recursion
+(&gt; ~1000) needs a loop or <code>sys.setrecursionlimit</code>.</p>
+
+<h2>8. 🛠 Practice</h2>
+<p>For every problem, answer the 3 questions <b>in comments first</b>. Then use 🎬 Watch my code — it draws your call tree. Workbook: <code>workbook/10_recursion.py</code>.</p>
+<div data-problem="rec-factorial" data-n="1"></div>
+<div data-problem="rec-digits" data-n="2"></div>
+<div data-problem="rec-reverse" data-n="3"></div>
+<div data-problem="rec-palindrome" data-n="4"></div>
+<div data-problem="rec-fib" data-n="5"></div>
+<div data-problem="rec-pow" data-n="6"></div>
+<div data-problem="rec-flatten" data-n="7"></div>
+<div data-problem="rec-hanoi" data-n="8"></div>
+
+<div data-quiz="rec-quiz"></div>
+
+<h2>9. 📌 Summary</h2>
+<ul>
+<li>Every call has its own variables on the call stack; calls wait for the calls they make.</li>
+<li>Base case + smaller sub-problem + combine. Then <b>trust</b> the recursive call.</li>
+<li>Draw the call tree: number of calls → time; depth → space.</li>
+</ul>
+<p><b>More LeetCode:</b> 344 Reverse String (recursively) · 206 Reverse Linked List (recursively) · 21 Merge Two Lists (recursively) · 779 K-th Symbol in Grammar · 894 All Possible Full Binary Trees.</p>
+
+</div></main>
+<script src="data/10-recursion.js"></script>
+<script src="data/10-recursion.traces.js"></script>
+<script src="../assets/py-src.js"></script>
+<script src="../assets/player.js"></script>
+<script src="../assets/python.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

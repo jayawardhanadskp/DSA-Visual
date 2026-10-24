@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Python for DSA — DSA with Python</title>
+<link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/core.js"></script>
+</head>
+<body data-lesson="01">
+<main><div class="content">
+
+<div class="kicker">Lesson 01 · Foundations</div>
+<h1>Python for DSA (for a Dart developer)</h1>
+<p class="lead">You don't need <i>all</i> of Python for DSA — you need about 20% of it, very well. This lesson fixes the "broken basics"
+by comparing everything with Dart, and by showing what Python does in memory.</p>
+
+<div class="callout key"><span class="title">🎯 After this lesson you can</span>
+<ul><li>write loops, lists, dicts, sets, functions and classes without looking things up</li>
+<li>explain what <code>b = a</code> really does (the #1 source of DSA bugs)</li>
+<li>use slicing, comprehensions, <code>enumerate</code>, <code>zip</code>, <code>sorted(key=…)</code></li>
+<li>know the DSA toolbox: <code>deque</code>, <code>heapq</code>, <code>Counter</code>, <code>defaultdict</code>, <code>bisect</code></li></ul></div>
+
+<div class="callout tip"><span class="title">Every grey code box below with a ▶ Run button is live Python</span>
+Change it and run it. Break it on purpose. Reading Python doesn't teach Python — typing does.</div>
+
+<h2>1. Same program, two languages</h2>
+<div class="two-col">
+<div><div class="label">Dart</div>
+<pre><code class="plain">int countBig(List&lt;int&gt; nums, int limit) {
+  var count = 0;
+  for (final x in nums) {
+    if (x &gt; limit) {
+      count++;
+    }
+  }
+  return count;
+}
+
+void main() {
+  print(countBig([3, 8, 12], 5));
+}</code></pre></div>
+<div><div class="label">Python</div>
+<pre><code>def count_big(nums, limit):
+    count = 0
+    for x in nums:
+        if x > limit:
+            count += 1
+    return count
+
+
+
+print(count_big([3, 8, 12], 5))</code></pre></div>
+</div>
+<ul>
+<li><b>No braces, no semicolons.</b> A colon <code>:</code> starts a block, and the <b>indentation</b> (4 spaces) <i>is</i> the block. Wrong indentation = different program.</li>
+<li><b>No types needed</b> (you can add hints: <code>def count_big(nums: list[int], limit: int) -&gt; int:</code>). No <code>var</code>/<code>final</code> — just assign.</li>
+<li><code>snake_case</code> names, not <code>camelCase</code>. No <code>main()</code> — top-level code just runs.</li>
+<li>No <code>++</code>: use <code>count += 1</code>.</li>
+</ul>
+
+<h2>2. Values and operators</h2>
+<table>
+<tr><th>Dart</th><th>Python</th><th>Notes</th></tr>
+<tr><td><code>int</code>, <code>double</code></td><td><code>int</code>, <code>float</code></td><td>Python ints never overflow: <code>2 ** 100</code> just works.</td></tr>
+<tr><td><code>true</code> / <code>false</code></td><td><code>True</code> / <code>False</code></td><td>Capital letters!</td></tr>
+<tr><td><code>null</code></td><td><code>None</code></td><td>Check with <code>x is None</code> / <code>x is not None</code>.</td></tr>
+<tr><td><code>&amp;&amp;</code> <code>||</code> <code>!</code></td><td><code>and</code> <code>or</code> <code>not</code></td><td></td></tr>
+<tr><td><code>7 ~/ 2</code> → 3</td><td><code>7 // 2</code> → 3</td><td>Whole-number division. <code>7 / 2</code> is always <code>3.5</code>.</td></tr>
+<tr><td><code>7 % 2</code></td><td><code>7 % 2</code> → 1</td><td>Remainder. <code>-7 % 3</code> is <code>2</code> in Python (always ≥ 0 for positive divisor).</td></tr>
+<tr><td><code>pow(2, 10)</code></td><td><code>2 ** 10</code></td><td>Power.</td></tr>
+<tr><td><code>0 &lt;= i &amp;&amp; i &lt; n</code></td><td><code>0 &lt;= i &lt; n</code></td><td>Python lets you <b>chain</b> comparisons.</td></tr>
+<tr><td><code>double.infinity</code></td><td><code>float("inf")</code> or <code>math.inf</code></td><td>Great start value for "smallest so far".</td></tr>
+<tr><td><code>'Hi $name'</code></td><td><code>f"Hi {name}"</code></td><td>f-strings. <code>f"{x=}"</code> prints <code>x=5</code> — great for debugging.</td></tr>
+<tr><td><code>cond ? a : b</code></td><td><code>a if cond else b</code></td><td></td></tr>
+</table>
+<pre class="playground">
+x = 17
+print(x // 5, x % 5, x / 5, 2 ** 10)
+print(0 <= x < 20)
+name = "Kasun"
+print(f"Hello {name}, {x=}")
+print("big" if x > 10 else "small")
+print(float("inf") > 10 ** 100)
+</pre>
+
+<h2>3. Loops</h2>
+<p><code>range(stop)</code>, <code>range(start, stop)</code> and <code>range(start, stop, step)</code> make number sequences. The <b>stop is never included</b>.
+<code>enumerate</code> gives you the index and the value together (Dart: <code>list.asMap().entries</code> or <code>indexed</code>).</p>
+<div data-viz="py-loops"></div>
+<div class="two-col">
+<div><div class="label">Dart</div>
+<pre><code class="plain">for (var i = 0; i &lt; n; i++) {}
+for (var i = n - 1; i &gt;= 0; i--) {}
+for (var i = 0; i &lt; n; i += 2) {}
+while (lo &lt;= hi) {}</code></pre></div>
+<div><div class="label">Python</div>
+<pre><code>for i in range(n): ...
+for i in range(n - 1, -1, -1): ...
+for i in range(0, n, 2): ...
+while lo <= hi: ...</code></pre></div>
+</div>
+<p><code>break</code> and <code>continue</code> work like in Dart. <code>zip(a, b)</code> walks two lists side by side.</p>
+<pre class="playground">
+for i in range(5, 0, -1):
+    print(i, end=" ")
+print()
+names = ["Ann", "Bo", "Cy"]
+ages = [31, 25, 40]
+for name, age in zip(names, ages):
+    print(name, age)
+for i, name in enumerate(names):
+    if i == 1:
+        continue
+    print(i, name)
+</pre>
+
+<h2>4. Lists (Dart <code>List</code>)</h2>
+<p>The list is the most important structure in DSA. Learn this table by heart — the <b>cost</b> column comes back in lesson 02.</p>
+<table>
+<tr><th>Python</th><th>Dart</th><th>What</th><th>Cost</th></tr>
+<tr><td><code>a = [3, 1, 2]</code></td><td><code>[3, 1, 2]</code></td><td>create</td><td></td></tr>
+<tr><td><code>a[0]</code>, <code>a[-1]</code></td><td><code>a[0]</code>, <code>a.last</code></td><td>first, last</td><td>O(1)</td></tr>
+<tr><td><code>len(a)</code></td><td><code>a.length</code></td><td>size</td><td>O(1)</td></tr>
+<tr><td><code>a.append(x)</code></td><td><code>a.add(x)</code></td><td>add at end</td><td>O(1)</td></tr>
+<tr><td><code>a.pop()</code></td><td><code>a.removeLast()</code></td><td>remove last (and return it)</td><td>O(1)</td></tr>
+<tr><td><code>a.pop(0)</code>, <code>a.insert(0, x)</code></td><td><code>removeAt(0)</code>, <code>insert(0, x)</code></td><td>at the front</td><td><b>O(n)</b> — everything shifts</td></tr>
+<tr><td><code>x in a</code></td><td><code>a.contains(x)</code></td><td>search</td><td><b>O(n)</b></td></tr>
+<tr><td><code>a.index(x)</code></td><td><code>a.indexOf(x)</code></td><td>position of x</td><td>O(n)</td></tr>
+<tr><td><code>a.sort()</code> / <code>sorted(a)</code></td><td><code>a.sort()</code></td><td>sort in place / new sorted list</td><td>O(n log n)</td></tr>
+<tr><td><code>a[::-1]</code>, <code>a.reverse()</code></td><td><code>a.reversed.toList()</code></td><td>reversed copy / in place</td><td>O(n)</td></tr>
+<tr><td><code>[0] * n</code></td><td><code>List.filled(n, 0)</code></td><td>n zeros</td><td>O(n)</td></tr>
+<tr><td><code>a + b</code></td><td><code>[...a, ...b]</code></td><td>join two lists (new list)</td><td>O(n + m)</td></tr>
+<tr><td><code>sum(a)</code>, <code>min(a)</code>, <code>max(a)</code></td><td><code>a.reduce(...)</code></td><td></td><td>O(n)</td></tr>
+</table>
+
+<h3>Slicing: <code>a[start:stop:step]</code></h3>
+<p>Slicing makes a <b>new list</b> (a copy of that part). Start is included, stop is not — same as <code>range</code>. Any part can be left out.</p>
+<pre class="playground">
+a = [10, 20, 30, 40, 50, 60]
+print(a[1:4])    # [20, 30, 40]
+print(a[:3])     # first 3
+print(a[3:])     # from index 3 to the end
+print(a[-2:])    # last 2
+print(a[::2])    # every second one
+print(a[::-1])   # reversed copy
+s = "python"
+print(s[1:4], s[::-1])   # strings slice too
+</pre>
+
+<h3>List comprehensions (Dart: <code>map</code>/<code>where</code>)</h3>
+<pre class="playground">
+nums = [1, 2, 3, 4, 5, 6]
+squares = [x * x for x in nums]                 # map
+evens = [x for x in nums if x % 2 == 0]         # where
+pairs = [(i, j) for i in range(3) for j in range(i)]  # nested loops
+grid = [[0] * 4 for _ in range(3)]              # 3 rows x 4 cols
+print(squares, evens, pairs, grid, sep="\n")
+</pre>
+
+<h2>5. Strings</h2>
+<p>Strings are <b>immutable</b> — you can't change a character (<code>s[0] = "x"</code> is an error). Every "change" makes a new string.
+To build a string piece by piece, collect pieces in a list and <code>"".join(pieces)</code> at the end.</p>
+<table>
+<tr><th>Python</th><th>What</th></tr>
+<tr><td><code>s.split()</code> / <code>s.split(",")</code></td><td>list of words / parts</td></tr>
+<tr><td><code>" ".join(words)</code></td><td>glue a list of strings</td></tr>
+<tr><td><code>s.strip()</code>, <code>s.lower()</code>, <code>s.upper()</code></td><td>trim / case</td></tr>
+<tr><td><code>ch.isalnum()</code>, <code>ch.isdigit()</code>, <code>ch.isalpha()</code></td><td>character tests</td></tr>
+<tr><td><code>ord("a")</code> → 97, <code>chr(98)</code> → "b"</td><td>character ↔ number. <code>ord(ch) - ord("a")</code> gives 0..25</td></tr>
+<tr><td><code>s.startswith("ab")</code>, <code>"ab" in s</code></td><td>tests</td></tr>
+<tr><td><code>sorted(s)</code></td><td>list of the characters, sorted</td></tr>
+</table>
+<pre class="playground">
+s = "  Hello, World  "
+words = s.strip().lower().split(", ")
+print(words)
+print("-".join(words))
+print([ord(ch) - ord("a") for ch in "abcz"])
+print("".join(sorted("banana")))
+pieces = []
+for i in range(5):
+    pieces.append(str(i))
+print("".join(pieces))
+</pre>
+
+<h2>6. Tuples and unpacking</h2>
+<p>A tuple <code>(1, 2)</code> is a fixed, unchangeable list. It's used to return several values, as dict keys, and for <b>unpacking</b>:</p>
+<pre class="playground">
+point = (3, 4)
+x, y = point            # unpacking (Dart 3 records: var (x, y) = point;)
+a, b = 1, 2
+a, b = b, a             # swap without a temp variable
+print(x, y, a, b)
+
+def min_max(nums):
+    return min(nums), max(nums)   # returns a tuple
+low, high = min_max([4, 9, 1])
+print(low, high)
+first, *rest = [1, 2, 3, 4]
+print(first, rest)
+</pre>
+
+<h2>7. dict and set (Dart <code>Map</code> and <code>Set</code>)</h2>
+<p>These are <b>hash</b> structures: looking up a key is <b>O(1)</b> on average, no matter how big they are. Lesson 04 shows how.</p>
+<div data-viz="py-dict-count"></div>
+<div class="two-col">
+<div><div class="label">dict</div>
+<pre><code>ages = {"ann": 31, "bo": 25}
+ages["cy"] = 40          # add / update
+ages.get("zed", 0)       # 0 if missing
+"ann" in ages            # True  (O(1))
+del ages["bo"]
+for name, age in ages.items():
+    print(name, age)
+list(ages.keys()), list(ages.values())</code></pre></div>
+<div><div class="label">set</div>
+<pre><code>seen = set()             # NOT {} — that's a dict
+seen.add(3)
+3 in seen                # True  (O(1))
+seen.remove(3)           # error if missing
+seen.discard(3)          # no error
+a, b = {1, 2, 3}, {2, 3, 4}
+a & b, a | b, a - b      # and, or, minus</code></pre></div>
+</div>
+<p>Keys must be <b>immutable</b>: numbers, strings, tuples. A list can't be a key — use <code>tuple(the_list)</code>.</p>
+
+<h2>8. Functions</h2>
+<pre class="playground">
+def greet(name, greeting="Hello"):        # default value
+    return f"{greeting}, {name}!"
+
+print(greet("Kasun"), greet("Kasun", greeting="Ayubowan"))
+
+# functions inside functions (you'll use this for DFS and backtracking)
+def count_paths(n):
+    calls = 0
+    def helper(i):
+        nonlocal calls          # 'nonlocal' lets the inner function change 'calls'
+        calls += 1
+        if i >= n:
+            return 1
+        return helper(i + 1) + helper(i + 2)
+    result = helper(0)
+    return result, calls
+
+print(count_paths(5))
+
+# lambda = small anonymous function (Dart: (x) => ...)
+words = ["kiwi", "fig", "banana"]
+print(sorted(words, key=lambda w: len(w)))          # sort by length
+print(sorted(words, key=lambda w: (-len(w), w)))     # longest first, then A→Z
+</pre>
+
+<h2>9. Classes</h2>
+<div class="two-col">
+<div><div class="label">Dart</div>
+<pre><code class="plain">class Node {
+  int val;
+  Node? next;
+  Node(this.val, [this.next]);
+}</code></pre></div>
+<div><div class="label">Python</div>
+<pre><code>class Node:
+    def __init__(self, val, next=None):
+        self.val = val
+        self.next = next</code></pre></div>
+</div>
+<p><code>__init__</code> is the constructor; <code>self</code> is Dart's <code>this</code> and you must write it. Objects can point to other objects — that's how
+linked lists, trees and graphs are built:</p>
+<div data-viz="py-class-node"></div>
+
+<h2>10. ⚠️ References — the most important idea in this lesson</h2>
+<p>In Python, a variable is a <b>label (name tag) stuck on an object</b>, not a box that holds the value. <code>b = a</code> sticks a second label on the
+same object. Dart works the same way for lists and objects — but in DSA it matters a lot, so watch it happen:</p>
+<div data-viz="py-references"></div>
+<p>The classic trap when making a 2-D grid:</p>
+<div data-viz="py-grid-trap"></div>
+<p>And functions: a function receives a <b>reference</b> to the caller's list. Changing the list (<code>append</code>, <code>items[0] = …</code>) is visible
+outside. Re-assigning the name (<code>x = 100</code>) is not.</p>
+<div data-viz="py-mutate-arg"></div>
+<div class="callout warn"><span class="title">Rules of thumb</span>
+<ul>
+<li>Need an independent copy of a list? <code>a.copy()</code>, <code>a[:]</code> or <code>list(a)</code>. (For a list of lists: <code>[row[:] for row in grid]</code>.)</li>
+<li>In backtracking (lesson 16) you'll write <code>result.append(path[:])</code> — copy, because <code>path</code> keeps changing.</li>
+<li>Default arguments are created <b>once</b>: never write <code>def f(x, seen=[])</code>. Use <code>seen=None</code> and create it inside.</li>
+</ul></div>
+
+<h2>11. The DSA toolbox (you'll meet these later)</h2>
+<table>
+<tr><th>Import</th><th>What it gives you</th><th>Lesson</th></tr>
+<tr><td><code>from collections import deque</code></td><td>Queue with O(1) add/remove at <b>both</b> ends: <code>append</code>, <code>popleft</code>. Use instead of <code>list.pop(0)</code>.</td><td>08, 13, 15</td></tr>
+<tr><td><code>from collections import Counter</code></td><td><code>Counter("banana")</code> → counts. <code>.most_common(k)</code>.</td><td>04</td></tr>
+<tr><td><code>from collections import defaultdict</code></td><td>dict with a default: <code>g = defaultdict(list)</code> then <code>g[k].append(v)</code> with no KeyError.</td><td>04, 15</td></tr>
+<tr><td><code>import heapq</code></td><td>Priority queue on a list: <code>heappush</code>, <code>heappop</code> (smallest first).</td><td>14, 15</td></tr>
+<tr><td><code>import bisect</code></td><td>Binary search in a sorted list: <code>bisect_left(a, x)</code>.</td><td>12</td></tr>
+<tr><td><code>from functools import cache</code></td><td>Remember function results automatically (memoization).</td><td>17</td></tr>
+<tr><td><code>import math</code></td><td><code>math.inf</code>, <code>math.sqrt</code>, <code>math.gcd</code>, …</td><td>—</td></tr>
+</table>
+<pre class="playground">
+from collections import deque, Counter, defaultdict
+q = deque([1, 2])
+q.append(3); q.appendleft(0)
+print(q, q.popleft(), q.pop(), q)
+print(Counter("mississippi").most_common(2))
+groups = defaultdict(list)
+for word in ["ant", "bee", "ape", "bat"]:
+    groups[word[0]].append(word)
+print(dict(groups))
+</pre>
+
+<h2>12. 🛠 Practice</h2>
+<p>These rebuild your Python "muscle memory". Do them all — they are quick. The same problems are in <code>workbook/01_python_for_dsa.py</code>.</p>
+<div data-problem="py-vowels" data-n="1"></div>
+<div data-problem="py-minmax" data-n="2"></div>
+<div data-problem="py-reverse-words" data-n="3"></div>
+<div data-problem="py-even-squares" data-n="4"></div>
+<div data-problem="py-char-count" data-n="5"></div>
+<div data-problem="py-unique-sorted" data-n="6"></div>
+<div data-problem="py-second-largest" data-n="7"></div>
+<div data-problem="py-transpose" data-n="8"></div>
+<div data-problem="py-wallet" data-n="9"></div>
+
+<div data-quiz="py-quiz"></div>
+
+<h2>13. 📌 Summary</h2>
+<ul>
+<li>Indentation is the block. <code>True/False/None</code>, <code>and/or/not</code>, <code>//</code> and <code>%</code>, <code>x += 1</code>.</li>
+<li><code>range</code> and slices never include the stop.</li>
+<li>Lists: end operations are O(1), front operations and <code>in</code> are O(n). dict/set lookups are O(1).</li>
+<li>Variables are labels on objects. <code>b = a</code> doesn't copy. Make 2-D lists with a comprehension.</li>
+</ul>
+
+</div></main>
+<script src="data/01-python-for-dsa.js"></script>
+<script src="data/01-python-for-dsa.traces.js"></script>
+<script src="../assets/py-src.js"></script>
+<script src="../assets/player.js"></script>
+<script src="../assets/python.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

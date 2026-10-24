@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prefix sums — DSA with Python</title>
+<link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/core.js"></script>
+</head>
+<body data-lesson="07">
+<main><div class="content">
+
+<div class="kicker">Lesson 07 · Core pattern</div>
+<h1>Prefix sums</h1>
+<p class="lead">Pay once, answer forever. Build a list of running totals in O(n), and then the sum of <b>any</b> section is a single subtraction.
+Combined with a dict (lesson 04), it solves "count the sections that sum to k" — even with negative numbers.</p>
+
+<div class="callout key"><span class="title">🎯 After this lesson you can</span>
+<ul><li>build a prefix list and get any range sum in O(1)</li>
+<li>use the "prefix + dict" pattern (Two Sum's big brother)</li>
+<li>use prefix <i>products</i>, and 2-D prefix sums</li></ul></div>
+
+<h2>1. The real-life picture</h2>
+<p>Your car's odometer shows the total km since it was new. How far did you drive between Kandy and Colombo? You don't add up every km —
+you take <b>odometer at Colombo − odometer at Kandy</b>. A prefix list is an odometer for your list.</p>
+
+<h2>2. 👀 Build it, use it</h2>
+<p><code>prefix[i]</code> = sum of the first <code>i</code> numbers. So <code>prefix[0] = 0</code> and the list is one longer than <code>nums</code>.
+That extra 0 removes all special cases.</p>
+<div data-viz="pre-build"></div>
+<div data-widget="prefix-range"></div>
+<div class="callout pattern"><span class="title">🧩 Template: prefix sums</span>
+<pre><code>prefix = [0] * (len(nums) + 1)
+for i, x in enumerate(nums):
+    prefix[i + 1] = prefix[i] + x
+
+# sum of nums[left..right] (both included):
+total = prefix[right + 1] - prefix[left]</code></pre>
+<p><b>Signals:</b> "sum of range / subarray", many queries on a list that doesn't change, "left sum equals right sum", "running total".</p></div>
+
+<h2>3. 👀 Prefix sums + dict: counting sections</h2>
+<p>"How many sections sum to exactly k?" The section from <code>i</code> to <code>j</code> has sum <code>P[j] − P[i]</code>. We want
+<code>P[j] − P[i] = k</code>, i.e. <code>P[i] = P[j] − k</code>. So while walking, at each position ask a dict: <b>how many earlier prefixes equal
+current − k?</b> That's exactly Two Sum's "complement" idea!</p>
+<div data-viz="pre-count-k"></div>
+<div class="callout pattern"><span class="title">🧩 Template: prefix + dict</span>
+<pre><code>seen = {0: 1}          # prefix value → count  (or → first index, for "longest")
+running = 0
+for x in nums:
+    running += x
+    answer += seen.get(running - k, 0)
+    seen[running] = seen.get(running, 0) + 1</code></pre>
+<p><b>Signals:</b> "number of subarrays with sum k", "longest subarray with sum k", negative numbers allowed, "equal number of 0s and 1s" (turn 0 into −1).</p></div>
+<div class="callout dart"><span class="title">Window or prefix?</span>
+All numbers positive and you want longest/shortest with sum ≥ / ≤ something → <b>sliding window</b> (O(1) space).
+Negative numbers, or "exactly k", or "how many" → <b>prefix sums + dict</b>.</div>
+
+<h2>4. Variations</h2>
+<ul>
+<li><b>Prefix products</b>: product of everything except index i = (product on the left) × (product on the right). Practice problem 5.</li>
+<li><b>2-D prefix sums</b>: the sum of any rectangle in a grid in O(1). Practice problem 7.</li>
+<li><b>Difference arrays</b> (the reverse idea): to add a value to a whole range many times, add at the start, subtract after the end, and take a prefix sum at the end.</li>
+</ul>
+
+<h2>5. 🛠 Practice</h2>
+<p>Workbook file: <code>workbook/07_prefix_sums.py</code>.</p>
+<div data-problem="pre-running" data-n="1"></div>
+<div data-problem="pre-num-array" data-n="2"></div>
+<div data-problem="pre-pivot" data-n="3"></div>
+<div data-problem="pre-subarray-k" data-n="4"></div>
+<div data-problem="pre-product" data-n="5"></div>
+<div data-problem="pre-contiguous" data-n="6"></div>
+<div data-problem="pre-matrix" data-n="7"></div>
+
+<div data-quiz="pre-quiz"></div>
+
+<h2>6. 📌 Summary</h2>
+<ul>
+<li><code>prefix[i]</code> = sum of the first i items; range sum = <code>prefix[r + 1] − prefix[l]</code>.</li>
+<li>Prefix + dict counts or measures sections with a given sum in O(n), negatives allowed.</li>
+<li>The same idea works for products, 2-D grids, and counts.</li>
+</ul>
+<p><b>More LeetCode:</b> 1991 Find the Middle Index · 523 Continuous Subarray Sum · 974 Subarray Sums Divisible by K · 1109 Corporate Flight Bookings (difference array).</p>
+
+</div></main>
+<script src="data/07-prefix-sums.js"></script>
+<script src="data/07-prefix-sums.traces.js"></script>
+<script src="../assets/py-src.js"></script>
+<script src="../assets/player.js"></script>
+<script src="../assets/python.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

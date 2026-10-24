@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Big-O — DSA with Python</title>
+<link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/core.js"></script>
+</head>
+<body data-lesson="02">
+<main><div class="content">
+
+<div class="kicker">Lesson 02 · Foundations</div>
+<h1>Big-O: how fast is my code?</h1>
+<p class="lead">Big-O answers one question: <b>when the input gets 10× bigger, how much more work does my code do?</b>
+It's how you compare two solutions without a stopwatch, and how you know <i>before coding</i> whether your idea is fast enough.</p>
+
+<div class="callout key"><span class="title">🎯 After this lesson you can</span>
+<ul><li>look at code and say its time and space complexity</li>
+<li>know the cost of common Python operations (and spot "hidden loops")</li>
+<li>read LeetCode's limits (like <code>n ≤ 10⁵</code>) and know which complexity you need</li></ul></div>
+
+<h2>1. The idea: count steps, not seconds</h2>
+<p>Seconds depend on your laptop. <b>Steps</b> don't. Big-O counts how the number of steps grows with the input size <b>n</b>,
+and keeps only the part that matters when n is big. Watch the three most common shapes:</p>
+
+<h3>O(n) — linear</h3>
+<p>Searching an unsorted list: in the worst case (target at the end, or missing) we look at every element once. 6 elements → 6 steps.
+1 million elements → 1 million steps.</p>
+<div data-viz="bigo-linear"></div>
+
+<h3>O(n²) — quadratic</h3>
+<p>A loop inside a loop over the same list. For every <code>i</code>, the inner loop runs n times. 4 elements → 16 steps. 1,000 elements → 1,000,000 steps.</p>
+<div data-viz="bigo-nested"></div>
+
+<h3>O(log n) — logarithmic</h3>
+<p>Halve the problem every step. 64 → 32 → 16 → 8 → 4 → 2 → 1 is 6 steps. 1,000,000 needs only 19 steps! This is why binary search (lesson 12) is so fast.
+<code>log₂(n)</code> just means "how many times can I halve n until I reach 1?"</p>
+<div data-viz="bigo-halving"></div>
+
+<h2>2. Why it matters — feel the numbers</h2>
+<div data-widget="bigo-table"></div>
+<div data-widget="bigo-chart"></div>
+
+<h2>3. The rules for finding Big-O</h2>
+<table>
+<tr><th>Rule</th><th>Example</th><th>Result</th></tr>
+<tr><td><b>Loops in sequence add</b></td><td>loop over n, then another loop over n</td><td>n + n = 2n → <b>O(n)</b></td></tr>
+<tr><td><b>Nested loops multiply</b></td><td>loop over n inside loop over n</td><td>n × n → <b>O(n²)</b></td></tr>
+<tr><td><b>Drop constants</b></td><td>3n + 5</td><td><b>O(n)</b></td></tr>
+<tr><td><b>Keep only the biggest term</b></td><td>n² + n + 100</td><td><b>O(n²)</b></td></tr>
+<tr><td><b>Different inputs, different letters</b></td><td>loop over a (n), nested loop over b (m)</td><td><b>O(n · m)</b>, not O(n²)</td></tr>
+<tr><td><b>Halving → log</b></td><td><code>while n &gt; 1: n //= 2</code></td><td><b>O(log n)</b></td></tr>
+<tr><td><b>Every line has a cost</b></td><td><code>if x in my_list</code> inside a loop</td><td>the hidden O(n) makes it <b>O(n²)</b></td></tr>
+</table>
+<div class="callout dart"><span class="title">Why we drop constants</span>
+2n and n both grow the same <i>way</i>: double the input → double the work. n² is a different way: double the input → 4× the work. Big-O
+cares about the <b>shape</b> of growth. (In real life constants still matter a bit — but first get the shape right.)</div>
+
+<h3>The common complexities, best to worst</h3>
+<table>
+<tr><th>Big-O</th><th>Name</th><th>Typical code</th></tr>
+<tr><td>O(1)</td><td>constant</td><td><code>a[i]</code>, <code>d[key]</code>, <code>x in my_set</code>, <code>append</code>, a math formula</td></tr>
+<tr><td>O(log n)</td><td>logarithmic</td><td>binary search, halving loop, heap push/pop</td></tr>
+<tr><td>O(n)</td><td>linear</td><td>one loop over the input, two pointers, sliding window</td></tr>
+<tr><td>O(n log n)</td><td>"n log n"</td><td>sorting (<code>sorted</code>, merge sort), n heap operations</td></tr>
+<tr><td>O(n²)</td><td>quadratic</td><td>all pairs, nested loops, simple sorts (bubble, insertion)</td></tr>
+<tr><td>O(2ⁿ)</td><td>exponential</td><td>all subsets, naive recursion like <code>fib(n-1) + fib(n-2)</code></td></tr>
+<tr><td>O(n!)</td><td>factorial</td><td>all orderings (permutations)</td></tr>
+</table>
+
+<h2>4. Space complexity</h2>
+<p>Same idea for <b>memory</b>: how much <i>extra</i> memory does the code use as n grows?</p>
+<ul>
+<li>A few variables (counters, pointers) → <b>O(1)</b> space.</li>
+<li>A new list/set/dict that can hold up to n items → <b>O(n)</b> space.</li>
+<li>An n × n grid → <b>O(n²)</b> space.</li>
+<li>Recursion uses the call stack: recursion depth d → <b>O(d)</b> space (lesson 10).</li>
+</ul>
+<p>Very often you trade one for the other: use O(n) memory (a set) to go from O(n²) time to O(n) time. You'll do exactly that in the practice below.</p>
+
+<h2>5. What Python operations cost</h2>
+<p>Many slow solutions are slow because of one line that <i>looks</i> cheap. Keep this table close:</p>
+<table>
+<tr><th>Operation</th><th>list</th><th>dict / set</th></tr>
+<tr><td>get by index / key</td><td><code>a[i]</code> O(1)</td><td><code>d[k]</code> O(1)</td></tr>
+<tr><td>search <code>x in …</code></td><td><b>O(n)</b> ⚠️</td><td>O(1)</td></tr>
+<tr><td>add</td><td><code>append</code> O(1) · <code>insert(0, x)</code> <b>O(n)</b></td><td><code>d[k] = v</code>, <code>s.add(x)</code> O(1)</td></tr>
+<tr><td>remove</td><td><code>pop()</code> O(1) · <code>pop(0)</code>, <code>remove(x)</code> <b>O(n)</b></td><td><code>del d[k]</code>, <code>s.remove(x)</code> O(1)</td></tr>
+<tr><td>copy / slice</td><td><code>a[i:j]</code> O(j − i) · <code>a[:]</code> O(n)</td><td><code>d.copy()</code> O(n)</td></tr>
+<tr><td>sort</td><td><code>sorted(a)</code> O(n log n)</td><td>—</td></tr>
+<tr><td>length, min/max/sum</td><td><code>len</code> O(1) · <code>min/max/sum</code> O(n)</td><td><code>len</code> O(1)</td></tr>
+<tr><td>string <code>s += ch</code> in a loop</td><td colspan="2">each <code>+=</code> may copy the string → can become O(n²). Collect in a list, then <code>"".join()</code>.</td></tr>
+</table>
+
+<h2>6. The LeetCode trick: read the constraints</h2>
+<p>Every LeetCode problem lists limits like <code>1 &lt;= nums.length &lt;= 10^5</code>. A Python solution can do roughly <b>10⁷ simple steps</b> in time.
+So the limit tells you which complexity they expect — before you even think about the algorithm:</p>
+<table>
+<tr><th>n is at most…</th><th>you can afford…</th><th>think about…</th></tr>
+<tr><td>10–12</td><td>O(n!)</td><td>all permutations, backtracking</td></tr>
+<tr><td>20–25</td><td>O(2ⁿ)</td><td>all subsets, backtracking</td></tr>
+<tr><td>~500</td><td>O(n³)</td><td>three nested loops, some DP</td></tr>
+<tr><td>~5,000</td><td>O(n²)</td><td>all pairs, 2-D DP</td></tr>
+<tr><td>~10⁵–10⁶</td><td>O(n log n) or O(n)</td><td>sorting, heap, hashing, two pointers, sliding window, binary search</td></tr>
+<tr><td>bigger (10⁹, 10¹²)</td><td>O(log n) or O(1)</td><td>binary search on the answer, math</td></tr>
+</table>
+
+<div data-quiz="bigo-quiz"></div>
+
+<h2>7. 🛠 Practice: make slow code fast</h2>
+<p>Each starter below is <b>correct but slow</b>. The last tests use big inputs, and the test runner stops code that takes more than ~3 million steps —
+just like LeetCode's "Time Limit Exceeded". Run the starter first to see it fail, then fix it.</p>
+<div data-problem="bo-sum-to-n" data-n="1"></div>
+<div data-problem="bo-has-dup" data-n="2"></div>
+<div data-problem="bo-common" data-n="3"></div>
+<div data-problem="bo-first-repeat" data-n="4"></div>
+
+<h2>8. 📌 Summary</h2>
+<ul>
+<li>Big-O = how the work grows with n. Count loops: sequence adds, nesting multiplies, halving gives log n. Drop constants.</li>
+<li>Know the hidden costs: <code>in</code> on a list, <code>pop(0)</code>, <code>insert(0, …)</code>, slicing, string <code>+=</code>.</li>
+<li>Trading memory for time (a set or dict) is the most common speed-up in DSA.</li>
+<li>From now on, after every solution, say: <i>"time O(…), space O(…)"</i>.</li>
+</ul>
+
+</div></main>
+<script src="data/02-big-o.js"></script>
+<script src="data/02-big-o.traces.js"></script>
+<script src="../assets/py-src.js"></script>
+<script src="../assets/player.js"></script>
+<script src="../assets/python.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

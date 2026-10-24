@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sliding window — DSA with Python</title>
+<link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/core.js"></script>
+</head>
+<body data-lesson="06">
+<main><div class="content">
+
+<div class="kicker">Lesson 06 · Core pattern</div>
+<h1>Sliding window</h1>
+<p class="lead">A sliding window is two pointers that mark the <b>start and end of a section</b> of a list or string. Instead of
+re-checking every section from scratch (O(n²) or worse), you <b>slide</b>: add what enters on the right, remove what leaves on the left.</p>
+
+<div class="callout key"><span class="title">🎯 After this lesson you can</span>
+<ul><li>tell a fixed-size window problem from a variable-size one</li>
+<li>write both templates from memory and explain why they are O(n)</li>
+<li>solve LeetCode 643, 1456, 3, 209, 1004, 424, 567, 438</li></ul></div>
+
+<h2>1. The real-life picture</h2>
+<p>Look at a long train through a window that shows exactly 3 carriages. When the train moves one carriage, you don't recount everything you see —
+one carriage disappeared on the left, one new carriage appeared on the right. That's it.</p>
+
+<h2>2. 👀 Fixed-size window</h2>
+<p>"Biggest sum of k neighbours." Brute force adds up every group of k numbers: O(n·k). The window keeps a running sum and updates it in O(1)
+per slide. The purple cells are the current window.</p>
+<div data-viz="sw-fixed"></div>
+<div class="callout pattern"><span class="title">🧩 Template: fixed window of size k</span>
+<pre><code>window = sum(nums[:k])          # (or counts of the first k items)
+best = window
+for right in range(k, len(nums)):
+    window += nums[right]       # add the new element
+    window -= nums[right - k]   # remove the element that left
+    best = max(best, window)</code></pre>
+<p><b>Signals:</b> "subarray / substring <b>of length k</b>", "every window of size k", "average of k consecutive".</p></div>
+
+<h2>3. 👀 Variable-size window</h2>
+<p>Now the size is not given: "the <b>longest</b> substring with no repeated characters". The window <b>grows</b> to the right one step at a time.
+When it becomes <b>invalid</b> (a repeated character), it <b>shrinks</b> from the left until it is valid again.</p>
+<div data-viz="sw-unique"></div>
+<div data-tracetable="sw-unique" data-line="10" data-vars="left, right, seen" data-max="8"
+  data-intro="Before line 10 (<code>best = …</code>) each time: what are <code>left</code>, <code>right</code> and the set <code>seen</code>? String <code>&quot;abcabcbb&quot;</code>. Write sets like <code>{'a', 'b'}</code> (sorted)."></div>
+
+<p>The other kind: "the <b>shortest</b> section whose sum is at least 7". Here the window shrinks <b>while it is valid</b> (to find a shorter valid one).</p>
+<div data-viz="sw-min-len"></div>
+
+<div class="callout pattern"><span class="title">🧩 Template: variable window</span>
+<pre><code>left = 0
+state = ...                         # sum, counts, set of what's inside
+best = ...
+for right in range(len(s)):
+    add s[right] to state           # 1. grow
+    while window is INVALID:        # 2. shrink until valid
+        remove s[left] from state   #    (for "shortest": while VALID → record, then shrink)
+        left += 1
+    best = max(best, right - left + 1)   # 3. record
+return best</code></pre>
+<p><b>Signals:</b> "<b>longest / shortest / minimum / maximum</b> contiguous subarray / substring", "with at most k …", "without repeating", "sum ≥ target" (positive numbers).</p></div>
+
+<h3>Why O(n)?</h3>
+<p>There's a <code>while</code> inside a <code>for</code>, which looks like O(n²). But count the moves: <code>right</code> moves n times in total and <code>left</code>
+also moves <b>at most n times in total</b> — it never moves back. So all the work together is at most 2n steps → O(n). This "count the total pointer moves"
+argument is called <i>amortised analysis</i>, and you can use it in interviews.</p>
+
+<h2>4. How to design the window — 3 questions</h2>
+<ol>
+<li><b>What is the state</b> I need to know about the window? (a sum, a count of zeros, a set of characters, letter counts)</li>
+<li><b>When is the window invalid?</b> (repeated char, more than k zeros, too many letters to replace…)</li>
+<li><b>When do I record the answer</b> — after shrinking (longest) or during shrinking (shortest)?</li>
+</ol>
+<p>Example, "max consecutive ones if you can flip k zeros": the state is <i>number of zeros in the window</i>; it's invalid when <i>zeros &gt; k</i>;
+record the length after shrinking. The problem never mentions a window — you rephrase it into one. That rephrasing is the skill.</p>
+
+<h2>5. Common mistakes</h2>
+<table>
+<tr><th>Mistake</th><th>Fix</th></tr>
+<tr><td>Window length <code>right - left</code></td><td>It's <code>right - left + 1</code> (both ends included).</td></tr>
+<tr><td>Using <code>if</code> instead of <code>while</code> to shrink</td><td>Sometimes you must remove several elements. Use <code>while</code>.</td></tr>
+<tr><td>Forgetting to undo the state when shrinking</td><td>Whatever you add for <code>right</code>, you must remove for <code>left</code>.</td></tr>
+<tr><td>Using a window with negative numbers for "sum = k"</td><td>Use prefix sums + dict (next lesson).</td></tr>
+</table>
+
+<h2>6. 🛠 Practice</h2>
+<p>Workbook file: <code>workbook/06_sliding_window.py</code>.</p>
+<div data-problem="sw-max-avg" data-n="1"></div>
+<div data-problem="sw-vowels" data-n="2"></div>
+<div data-problem="sw-unique" data-n="3"></div>
+<div data-problem="sw-min-len" data-n="4"></div>
+<div data-problem="sw-ones" data-n="5"></div>
+<div data-problem="sw-replace" data-n="6"></div>
+<div data-problem="sw-permutation" data-n="7"></div>
+<div data-problem="sw-anagrams" data-n="8"></div>
+
+<div data-quiz="sw-quiz"></div>
+
+<h2>7. 📌 Summary</h2>
+<ul>
+<li>Window = a contiguous section marked by <code>left</code> and <code>right</code>.</li>
+<li>Fixed size: add one, remove one. Variable size: grow, shrink while invalid (or while valid for "shortest"), record.</li>
+<li>Always O(n) because both pointers only move forward.</li>
+</ul>
+<p><b>More LeetCode:</b> 121 Best Time to Buy and Sell Stock (as a window) · 1004 · 904 Fruit Into Baskets · 76 Minimum Window Substring (hard, the boss level) · 239 Sliding Window Maximum (hard, monotonic deque).</p>
+
+</div></main>
+<script src="data/06-sliding-window.js"></script>
+<script src="data/06-sliding-window.traces.js"></script>
+<script src="../assets/py-src.js"></script>
+<script src="../assets/player.js"></script>
+<script src="../assets/python.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

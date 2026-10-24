@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pattern playbook — DSA with Python</title>
+<link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/core.js"></script>
+</head>
+<body data-lesson="20">
+<main><div class="content">
+
+<div class="kicker">Lesson 20 · Interview mode</div>
+<h1>Pattern playbook &amp; interview mode</h1>
+<p class="lead">Until now every lesson told you the pattern. LeetCode and interviews don't. This last lesson trains the missing skill:
+<b>read a problem you've never seen and recognise which pattern it is</b>. Then it gives you a plan for the next months.</p>
+
+<div class="callout key"><span class="title">🎯 After this lesson you can</span>
+<ul><li>go from problem text → signals → pattern → template</li>
+<li>run a 45-minute interview using the 6-step routine, out loud</li>
+<li>solve mixed problems where nobody tells you the pattern</li>
+<li>follow a structured LeetCode plan with spaced review</li></ul></div>
+
+<h2>1. Signals → pattern (the cheat sheet)</h2>
+<table>
+<tr><th>If the problem says / has…</th><th>Think</th><th>Lesson</th></tr>
+<tr><td>sorted array + pair / triple · palindrome · reverse in place</td><td>Two pointers</td><td>05</td></tr>
+<tr><td>longest / shortest / best <b>contiguous</b> subarray or substring · "at most k"</td><td>Sliding window</td><td>06</td></tr>
+<tr><td>unsorted · "seen before" · pairs · count · anagram · group · duplicates</td><td>Hash map / set</td><td>04</td></tr>
+<tr><td>sum of a range · "subarray sum = k" with negatives · many range queries</td><td>Prefix sums (+ dict)</td><td>07</td></tr>
+<tr><td>matching brackets · nesting · undo · "next greater / smaller"</td><td>Stack / monotonic stack</td><td>08</td></tr>
+<tr><td>linked list · middle · cycle · k-th from end</td><td>Fast &amp; slow, dummy node</td><td>09</td></tr>
+<tr><td>sorted input + find · "minimum X such that possible" · huge range (10⁹)</td><td>Binary search (on the answer)</td><td>12</td></tr>
+<tr><td>tree: depth, path, compare, validate</td><td>DFS (recursion)</td><td>13</td></tr>
+<tr><td>tree/graph: level, nearest, fewest steps</td><td>BFS (queue)</td><td>13, 15</td></tr>
+<tr><td>k largest / smallest / closest · "repeatedly take the best" · merge k sorted · median stream</td><td>Heap</td><td>14</td></tr>
+<tr><td>grid of connected cells · islands · regions · connections</td><td>Graph DFS/BFS</td><td>15</td></tr>
+<tr><td>dependencies / prerequisites / order</td><td>Topological sort</td><td>15</td></tr>
+<tr><td>weighted shortest path</td><td>Dijkstra</td><td>15</td></tr>
+<tr><td>groups formed by connections over time · redundant edge</td><td>Union-find</td><td>15</td></tr>
+<tr><td>"all" subsets / permutations / combinations / boards</td><td>Backtracking</td><td>16</td></tr>
+<tr><td>"how many ways" · min/max cost · "can you make…" · choices that affect later steps</td><td>Dynamic programming</td><td>17</td></tr>
+<tr><td>intervals · meetings · "minimum number of rooms / removals"</td><td>Sort + sweep (+ heap)</td><td>18</td></tr>
+<tr><td>a locally best choice that is provably safe</td><td>Greedy</td><td>18</td></tr>
+<tr><td>prefixes · autocomplete · dictionary of words</td><td>Trie</td><td>19</td></tr>
+<tr><td>"single number" · powers of two · subsets of ≤ 20 items as masks</td><td>Bit tricks</td><td>19</td></tr>
+</table>
+<div class="callout tip"><span class="title">Also read the constraints</span>
+n ≤ 20 → exponential is fine (backtracking). n ≤ 5,000 → O(n²) is fine. n ≥ 10⁵ → you need O(n log n) or O(n). Values up to 10⁹ → maybe binary search on the answer. (Lesson 02.)</div>
+
+<h2>2. 🧠 Drill: which pattern?</h2>
+<p>Read each problem and pick the pattern before looking at the explanation. Repeat this drill until you score 16/16 quickly.</p>
+<div data-quiz="pb-which"></div>
+
+<h2>3. All the templates on one page</h2>
+<div class="two-col">
+<pre><code># two pointers (opposite ends)
+l, r = 0, len(a) - 1
+while l < r:
+    if good: return ...
+    elif need_bigger: l += 1
+    else: r -= 1
+
+# sliding window (variable)
+left = 0
+for right in range(len(s)):
+    add(s[right])
+    while invalid():
+        remove(s[left]); left += 1
+    best = max(best, right - left + 1)
+
+# prefix sums + dict
+seen, run = {0: 1}, 0
+for x in nums:
+    run += x
+    count += seen.get(run - k, 0)
+    seen[run] = seen.get(run, 0) + 1
+
+# monotonic stack
+stack = []
+for i, x in enumerate(nums):
+    while stack and nums[stack[-1]] < x:
+        j = stack.pop(); ans[j] = x
+    stack.append(i)
+
+# binary search: first True
+lo, hi = 0, n
+while lo < hi:
+    mid = (lo + hi) // 2
+    if ok(mid): hi = mid
+    else: lo = mid + 1</code></pre>
+<pre><code># tree DFS
+def dfs(node):
+    if not node: return base
+    l, r = dfs(node.left), dfs(node.right)
+    return combine(node, l, r)
+
+# BFS (graph / grid / tree levels)
+seen, q = {start}, deque([start])
+while q:
+    node = q.popleft()
+    for nei in neighbours(node):
+        if nei not in seen:
+            seen.add(nei); q.append(nei)
+
+# heap of size k
+for x in nums:
+    heappush(h, x)
+    if len(h) > k: heappop(h)
+
+# backtracking
+def bt(start):
+    res.append(path[:])
+    for i in range(start, n):
+        path.append(a[i]); bt(i + 1); path.pop()
+
+# DP (bottom-up)
+dp = [base] * (n + 1)
+for i in range(1, n + 1):
+    dp[i] = best_of(dp[i - 1], dp[i - 2], ...)
+
+# intervals
+iv.sort()
+for s, e in iv:
+    if out and s <= out[-1][1]:
+        out[-1][1] = max(out[-1][1], e)
+    else: out.append([s, e])</code></pre>
+</div>
+
+<h2>4. Interview mode: the 45 minutes</h2>
+<table>
+<tr><th>Minutes</th><th>Do</th><th>Say out loud (example)</th></tr>
+<tr><td>0–5</td><td><b>Understand.</b> Restate, ask about input size, duplicates, negatives, empty input, what to return.</td><td>"So I get an unsorted list of integers, can be negative, and return the indexes — is there always exactly one answer?"</td></tr>
+<tr><td>5–10</td><td><b>Examples</b> by hand, including an edge case.</td><td>"For [2, 7, 11] and 9, I'd return [0, 1]. Empty list → no answer."</td></tr>
+<tr><td>10–15</td><td><b>Brute force</b> + its Big-O. Then find the waste and name the pattern.</td><td>"Checking all pairs is O(n²). The waste is searching for the partner again and again — a dict makes that O(1)."</td></tr>
+<tr><td>15–30</td><td><b>Code</b> cleanly. Explain as you go. Good names.</td><td>"<code>seen</code> maps value to index…"</td></tr>
+<tr><td>30–38</td><td><b>Test</b>: trace your example through the code line by line (like a trace table!). Then edge cases.</td><td>"i = 0, x = 2, need = 7, not seen, store 2 → 0…"</td></tr>
+<tr><td>38–45</td><td><b>Complexity</b> and trade-offs; possible follow-ups.</td><td>"O(n) time, O(n) space. If the input were sorted I could do O(1) space with two pointers."</td></tr>
+</table>
+<div class="callout warn"><span class="title">Stuck in an interview?</span>
+Say what you're thinking ("I'm considering a sliding window, but negatives break it…"). Go back to the brute force and look for repeated work. Try a smaller example.
+Ask "would sorting help?" and "what if I had a dict of…?". Silence is the only real mistake.</div>
+
+<h2>5. 🛠 Mixed practice — the pattern is hidden</h2>
+<p>Each problem says only "Mixed — which pattern?". Before coding, write in a comment: <code># Pattern: … because …</code>. The first hint tells you if you were right.
+Workbook: <code>workbook/20_pattern_playbook.py</code>.</p>
+<div data-problem="mx-nearby" data-n="1"></div>
+<div data-problem="mx-vowels" data-n="2"></div>
+<div data-problem="mx-longest-pal" data-n="3"></div>
+<div data-problem="mx-next-greater" data-n="4"></div>
+<div data-problem="mx-min-depth" data-n="5"></div>
+<div data-problem="mx-fruits" data-n="6"></div>
+<div data-problem="mx-ship" data-n="7"></div>
+<div data-problem="mx-island-area" data-n="8"></div>
+<div data-problem="mx-rob-circle" data-n="9"></div>
+<div data-problem="mx-comb3" data-n="10"></div>
+<div data-problem="mx-closest" data-n="11"></div>
+
+<h2>6. Your LeetCode plan</h2>
+<p>About 140 problems in the same order as this course. Many you have already solved here — on LeetCode, solve them again in their editor
+(that's your first review!). Aim for 1–2 a day; do the review list on the home page first.</p>
+<div data-widget="lc-plan"></div>
+
+<h2>7. How to keep going</h2>
+<div class="cards">
+<div class="card"><h4>📅 Daily</h4><p>Reviews due (home page) → 1 new problem → write down the pattern + one sentence of "why" in a notebook.</p></div>
+<div class="card"><h4>⏱ Time box</h4><p>20–30 minutes stuck → one hint → 15 more minutes → solution. Then retype it from memory and add it to your review list.</p></div>
+<div class="card"><h4>🗣 Practise talking</h4><p>Once a week, solve a problem out loud as in section 4 — record yourself, or explain it to a friend.</p></div>
+<div class="card"><h4>🎯 Contests</h4><p>After ~100 problems, try LeetCode weekly contests. Q1 and Q2 are usually the patterns from this course.</p></div>
+</div>
+<div class="callout tip"><span class="title">You made it 🎉</span>
+You started at "I tried LeetCode and videos and didn't get it". You now have a method (see → predict → pattern → build → review), 20 patterns with templates,
+a way to watch any code run, and ~170 solved problems. DSA isn't about being clever — it's about recognising patterns you have practised. Keep the reviews going and it sticks.</div>
+
+</div></main>
+<script src="data/20-pattern-playbook.js"></script>
+<script src="../assets/py-src.js"></script>
+<script src="../assets/player.js"></script>
+<script src="../assets/python.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

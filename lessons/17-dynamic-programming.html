@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dynamic programming — DSA with Python</title>
+<link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/core.js"></script>
+</head>
+<body data-lesson="17">
+<main><div class="content">
+
+<div class="kicker">Lesson 17 · Advanced techniques</div>
+<h1>Dynamic programming</h1>
+<p class="lead">Dynamic programming (DP) has a scary name for a simple idea: <b>don't solve the same sub-problem twice — write the answer down</b>.
+It turns exponential recursion into polynomial time. The hard part is not the code, it's defining what a sub-problem <i>is</i>. This lesson gives you
+a 5-step recipe and lets you watch tables fill up.</p>
+
+<div class="callout key"><span class="title">🎯 After this lesson you can</span>
+<ul><li>see repeated work in a call tree and remove it with memoization</li>
+<li>turn a recursion into a bottom-up table</li>
+<li>use the 5-step recipe: state, recurrence, base cases, order, answer</li>
+<li>solve LeetCode 70, 746, 198, 322, 62, 300, 1143, 139, 416, 72</li></ul></div>
+
+<h2>1. 👀 The problem with plain recursion</h2>
+<p>Go back to lesson 10's fib(5) call tree: fib(3) was computed twice, fib(2) three times. Now watch the same function with a dict called <code>memo</code>.
+When an answer is already in the memo, the call returns immediately — whole branches of the tree disappear.</p>
+<div data-viz="dp-fib-memo"></div>
+<p>Without memo: fib(n) makes about 2ⁿ calls. With memo: each fib(k) is computed once → <b>O(n)</b>. fib(100) goes from "longer than the universe" to instant.</p>
+<pre class="playground">
+from functools import cache
+
+@cache                      # Python's built-in memoization
+def fib(n):
+    if n < 2:
+        return n
+    return fib(n - 1) + fib(n - 2)
+
+print(fib(100))
+</pre>
+
+<h2>2. Top-down and bottom-up</h2>
+<div class="two-col">
+<div class="card"><h4>Top-down (memoization)</h4><p>Write the natural recursion, add a memo (or <code>@cache</code>). Start from the big question; the recursion asks the small ones.
+Easiest to write. Watch the recursion depth (~1000 in Python).</p></div>
+<div class="card"><h4>Bottom-up (tabulation)</h4><p>Fill a list/table from the smallest sub-problems up to the big one, with a loop. No recursion, and often you only need the last row → less memory.</p></div>
+</div>
+<div data-viz="dp-climb"></div>
+
+<h2>3. The 5-step recipe</h2>
+<div class="callout pattern"><span class="title">🧩 How to build any DP solution</span>
+<ol>
+<li><b>State</b> — say in words what <code>dp[i]</code> (or <code>dp[i][j]</code>) means. <i>"dp[a] = the fewest coins that make amount a."</i></li>
+<li><b>Recurrence</b> — how is <code>dp[i]</code> built from smaller states? Think about the <b>last decision</b>: <i>"the last coin was some c, so dp[a] = 1 + dp[a − c] for the best c."</i></li>
+<li><b>Base cases</b> — the smallest states you know directly. <i>"dp[0] = 0."</i></li>
+<li><b>Order</b> — fill states so that everything a state needs is already computed (usually small → big).</li>
+<li><b>Answer</b> — which cell is the answer? <i>dp[amount]</i>, or <code>max(dp)</code>, or <code>dp[n][m]</code>…</li>
+</ol>
+<p><b>Signals:</b> "how many ways", "minimum / maximum cost / profit", "can you reach / make / partition…", "longest / shortest subsequence", a choice at every step whose effect continues later. If greedy fails on a small example, think DP.</p></div>
+
+<h2>4. 👀 1-D DP: coin change</h2>
+<p>For every amount from 1 up, try every coin as the "last coin" and keep the best. The blue cell is the smaller amount we build on.</p>
+<div data-viz="dp-coins"></div>
+<div data-tracetable="dp-coins" data-line="7" data-vars="a, c" data-max="7"
+  data-intro="Line 7 (<code>dp[a] = …</code>) only runs when a coin gives a <b>better</b> answer. Each time it is about to run, what are the amount <code>a</code> and the coin <code>c</code>? Coins <code>[1, 3, 4]</code>, amount 6."></div>
+
+<h2>5. 👀 2-D DP: two strings</h2>
+<p>With two strings, the state is <i>"the answer for the first i characters of a and the first j characters of b"</i>. Each cell looks at its
+neighbours up, left and diagonal (blue).</p>
+<div data-viz="dp-lcs"></div>
+
+<h2>6. Common DP families</h2>
+<table>
+<tr><th>Family</th><th>State</th><th>Examples</th></tr>
+<tr><td>Fibonacci-like (1-D)</td><td><code>dp[i]</code> from <code>dp[i-1]</code>, <code>dp[i-2]</code></td><td>climbing stairs, house robber, decode ways</td></tr>
+<tr><td>Unbounded knapsack</td><td><code>dp[amount]</code>, items reusable</td><td>coin change, combination sum IV</td></tr>
+<tr><td>0/1 knapsack</td><td>take each item once with a capacity</td><td>partition equal subset sum, target sum</td></tr>
+<tr><td>"Ends at i"</td><td><code>dp[i]</code> = best answer ending at i</td><td>longest increasing subsequence, max subarray</td></tr>
+<tr><td>Grid</td><td><code>dp[r][c]</code> from top and left</td><td>unique paths, minimum path sum</td></tr>
+<tr><td>Two sequences</td><td><code>dp[i][j]</code> for prefixes</td><td>LCS, edit distance</td></tr>
+<tr><td>Prefix splitting</td><td><code>ok[i]</code> for the first i chars</td><td>word break, palindrome partitioning II</td></tr>
+</table>
+
+<h2>7. 🛠 Practice</h2>
+<p>For each problem, write the 5 recipe steps as comments <b>before</b> any code. Workbook: <code>workbook/17_dynamic_programming.py</code>.</p>
+<div data-problem="dp-climb" data-n="1"></div>
+<div data-problem="dp-min-cost" data-n="2"></div>
+<div data-problem="dp-rob" data-n="3"></div>
+<div data-problem="dp-coins" data-n="4"></div>
+<div data-problem="dp-paths" data-n="5"></div>
+<div data-problem="dp-lis" data-n="6"></div>
+<div data-problem="dp-lcs" data-n="7"></div>
+<div data-problem="dp-word-break" data-n="8"></div>
+<div data-problem="dp-partition" data-n="9"></div>
+<div data-problem="dp-edit" data-n="10"></div>
+
+<div data-quiz="dp-quiz"></div>
+
+<h2>8. 📌 Summary</h2>
+<ul>
+<li>DP = recursion without repeated work. Memo (top-down) or table (bottom-up).</li>
+<li>Recipe: state → recurrence (think about the last decision) → base cases → order → answer.</li>
+<li>Time ≈ number of states × work per state.</li>
+<li>Learn the families; most problems are a member of one.</li>
+</ul>
+<p><b>More LeetCode:</b> 91 Decode Ways · 213 House Robber II · 64 Minimum Path Sum · 518 Coin Change II · 494 Target Sum · 5 Longest Palindromic Substring · 309 Best Time to Buy and Sell Stock with Cooldown · 312 Burst Balloons (hard).</p>
+
+</div></main>
+<script src="data/17-dynamic-programming.js"></script>
+<script src="data/17-dynamic-programming.traces.js"></script>
+<script src="../assets/py-src.js"></script>
+<script src="../assets/player.js"></script>
+<script src="../assets/python.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

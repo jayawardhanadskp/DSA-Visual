@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Binary search — DSA with Python</title>
+<link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/core.js"></script>
+</head>
+<body data-lesson="12">
+<main><div class="content">
+
+<div class="kicker">Lesson 12 · Recursion &amp; searching</div>
+<h1>Binary search</h1>
+<p class="lead">Every step throws away <b>half</b> of what's left. A billion sorted numbers need only 30 steps. The idea is simple —
+the difficulty is the details (<code>&lt;</code> or <code>&lt;=</code>? <code>mid</code> or <code>mid - 1</code>?). This lesson gives you
+templates you can trust, and shows the powerful "binary search on the answer".</p>
+
+<div class="callout key"><span class="title">🎯 After this lesson you can</span>
+<ul><li>write the classic search and the lower-bound search without off-by-one bugs</li>
+<li>use binary search on things that aren't sorted lists (slopes, rotations, answers)</li>
+<li>solve LeetCode 704, 35, 69, 34, 162, 153, 33, 875, 74</li></ul></div>
+
+<h2>1. Play it first</h2>
+<div data-widget="guess-game"></div>
+<p>The best strategy is always to guess the middle of what's left. "Too small" removes the whole lower half at once. That's binary search.</p>
+
+<h2>2. 👀 The classic version</h2>
+<div data-viz="bs-classic"></div>
+<div data-tracetable="bs-classic" data-line="4" data-vars="lo, hi" data-max="4"
+  data-intro="Before line 4 (<code>mid = …</code>) each time: what are <code>lo</code> and <code>hi</code>? List of 10 numbers, target <code>23</code>."></div>
+<div class="callout pattern"><span class="title">🧩 Template A — find an exact value</span>
+<pre><code>lo, hi = 0, len(nums) - 1
+while lo <= hi:                 # search space nums[lo..hi] is not empty
+    mid = (lo + hi) // 2
+    if nums[mid] == target:
+        return mid
+    if nums[mid] < target:
+        lo = mid + 1            # mid is checked → exclude it
+    else:
+        hi = mid - 1
+return -1</code></pre></div>
+
+<h2>3. 👀 Lower bound: the first position that is big enough</h2>
+<p>Many problems don't ask "is it there?" but "where does it <b>start</b>?" or "where would it go?". This template finds the <b>first index</b>
+where a condition becomes true. With duplicates it finds the first one.</p>
+<div data-viz="bs-lower"></div>
+<div class="callout pattern"><span class="title">🧩 Template B — first index where condition(i) is True</span>
+<pre><code>lo, hi = 0, len(nums)           # hi = len: "maybe nothing qualifies"
+while lo < hi:
+    mid = (lo + hi) // 2
+    if condition(mid):          # e.g. nums[mid] >= target
+        hi = mid                # mid might be the answer → keep it
+    else:
+        lo = mid + 1
+return lo                       # lo == hi == the first True (or len)</code></pre>
+<p>Python has it built in: <code>bisect.bisect_left(nums, x)</code> (first index with value ≥ x) and <code>bisect_right</code> (first index with value &gt; x).</p></div>
+<pre class="playground">
+import bisect
+nums = [1, 3, 3, 3, 5, 8]
+print(bisect.bisect_left(nums, 3), bisect.bisect_right(nums, 3))   # 1 4
+print(bisect.bisect_left(nums, 4))      # 4: where 4 would be inserted
+bisect.insort(nums, 4)                  # insert and keep it sorted
+print(nums)
+</pre>
+
+<h2>4. The big idea: binary search on a yes/no question</h2>
+<p>Binary search doesn't really need a sorted list. It needs a question whose answers look like this, along some range:</p>
+<pre><code class="plain">  no  no  no  no  YES YES YES YES       ← find the first YES
+  ↑ lo               ↑ answer       ↑ hi</code></pre>
+<p>"Is <code>nums[i] &gt;= target</code>?" is one such question. So is "can Koko finish with speed k?", "can we ship everything in d days with
+capacity c?", "is r * r &gt; x?". If the answer for a bigger value is always at least as good, you can binary search the <b>answer itself</b>:</p>
+<div data-viz="bs-answer"></div>
+<div class="callout pattern"><span class="title">🧩 Template C — binary search on the answer</span>
+<pre><code>def feasible(x):            # O(n) check: does value x work?
+    ...
+
+lo, hi = smallest_possible, biggest_possible
+while lo < hi:
+    mid = (lo + hi) // 2
+    if feasible(mid):
+        hi = mid            # works → maybe something smaller works too
+    else:
+        lo = mid + 1
+return lo</code></pre>
+<p><b>Signals:</b> "minimum X such that…", "maximum X such that…", "at least / at most", huge ranges (up to 10⁹) where a loop over every value is too slow.</p></div>
+
+<h2>5. Common mistakes</h2>
+<table>
+<tr><th>Mistake</th><th>Fix</th></tr>
+<tr><td>Mixing the templates (<code>lo &lt;= hi</code> with <code>hi = mid</code>) → infinite loop</td><td>Template A: <code>&lt;=</code>, <code>mid ± 1</code>. Template B/C: <code>&lt;</code>, <code>hi = mid</code>, <code>lo = mid + 1</code>.</td></tr>
+<tr><td>Searching for the <b>last</b> True with <code>lo = mid</code></td><td>Use <code>mid = (lo + hi + 1) // 2</code> (round up), or search for the first False and subtract 1.</td></tr>
+<tr><td>Binary searching an unsorted list</td><td>Ask: is there a rule that safely throws away half? If not, sort first or use a dict.</td></tr>
+<tr><td>Not testing tiny inputs</td><td>Trace by hand with 0, 1 and 2 elements — most bugs show up there.</td></tr>
+</table>
+
+<h2>6. 🛠 Practice</h2>
+<p>Workbook: <code>workbook/12_binary_search.py</code>.</p>
+<div data-problem="bs-search" data-n="1"></div>
+<div data-problem="bs-insert" data-n="2"></div>
+<div data-problem="bs-sqrt" data-n="3"></div>
+<div data-problem="bs-range" data-n="4"></div>
+<div data-problem="bs-peak" data-n="5"></div>
+<div data-problem="bs-rot-min" data-n="6"></div>
+<div data-problem="bs-rot-search" data-n="7"></div>
+<div data-problem="bs-koko" data-n="8"></div>
+<div data-problem="bs-matrix" data-n="9"></div>
+
+<div data-quiz="bs-quiz"></div>
+
+<h2>7. 📌 Summary</h2>
+<ul>
+<li>Binary search = halve the search space every step → O(log n).</li>
+<li>Template A finds an exact value; template B finds the first position where a condition becomes true.</li>
+<li>Any "no…no YES…YES" question can be binary searched — including the answer itself.</li>
+</ul>
+<p><b>More LeetCode:</b> 278 First Bad Version · 374 Guess Number Higher or Lower · 1011 Capacity To Ship Packages · 410 Split Array Largest Sum (hard) · 981 Time Based Key-Value Store · 4 Median of Two Sorted Arrays (hard).</p>
+
+</div></main>
+<script src="data/12-binary-search.js"></script>
+<script src="data/12-binary-search.traces.js"></script>
+<script src="../assets/py-src.js"></script>
+<script src="../assets/player.js"></script>
+<script src="../assets/python.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

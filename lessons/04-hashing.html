@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hash maps &amp; sets — DSA with Python</title>
+<link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/core.js"></script>
+</head>
+<body data-lesson="04">
+<main><div class="content">
+
+<div class="kicker">Lesson 04 · Arrays &amp; hashing</div>
+<h1>Hash maps &amp; sets</h1>
+<p class="lead">If you remember only one data structure for interviews, make it this one. A dict or set answers
+<b>"have I seen this?"</b> and <b>"how many?"</b> in O(1). It turns a huge number of O(n²) brute-force solutions into O(n).</p>
+
+<div class="callout key"><span class="title">🎯 After this lesson you can</span>
+<ul><li>explain how a hash table finds a key without searching</li>
+<li>use the 4 hashing patterns: <b>seen-before</b>, <b>complement</b>, <b>counting</b>, <b>grouping</b></li>
+<li>solve LeetCode 1, 242, 387, 383, 205, 49, 347, 128</li></ul></div>
+
+<h2>1. The real-life picture</h2>
+<p>A school has 1,000 lockers. Instead of searching every locker for "Kasun's bag", there's a rule: <i>take the name, turn it into a number,
+and that number is the locker</i>. To find the bag you apply the same rule and open one locker. That rule is the <b>hash function</b>.</p>
+<div data-widget="hash-buckets"></div>
+<ul>
+<li>Two keys can land in the same bucket — a <b>collision</b>. The bucket then holds both, and Python checks the few keys there.</li>
+<li>Python keeps buckets short by growing the table, so lookups are <b>O(1) on average</b>.</li>
+<li>That's why keys must be <b>immutable</b> (str, int, tuple): if a key changed, its hash would change and it would be in the wrong bucket.</li>
+</ul>
+<div class="callout dart"><span class="title">Dart → Python</span>
+<code>Map&lt;String, int&gt;</code> → <code>dict</code>, <code>Set&lt;int&gt;</code> → <code>set</code>, <code>map.containsKey(k)</code> → <code>k in d</code>,
+<code>map[k] ?? 0</code> → <code>d.get(k, 0)</code>, <code>map.putIfAbsent(k, () =&gt; [])</code> → <code>d.setdefault(k, [])</code> or <code>defaultdict(list)</code>.</div>
+
+<h2>2. Pattern 1 — "complement": have I seen what I need?</h2>
+<p>Two Sum, brute force, checks every pair: O(n²). The hashing idea: walk once, and for each <code>x</code> ask a dict whether its partner
+<code>target - x</code> already appeared.</p>
+<div data-viz="hash-two-sum"></div>
+<div data-tracetable="hash-two-sum" data-line="5" data-vars="i, x, need" data-max="6"
+  data-intro="Before line 5 (<code>if need in seen</code>) runs each time, what are <code>i</code>, <code>x</code> and <code>need</code>? List <code>[5, 11, 9, 2, 14, 3]</code>, target <code>17</code>."></div>
+
+<h2>3. Pattern 2 — counting</h2>
+<p>Count everything first, then answer questions about the counts. A dict (or <code>Counter</code>) works for any values; a list of 26 works for lowercase letters (lesson 03).</p>
+<div data-viz="hash-first-unique"></div>
+<pre class="playground">
+from collections import Counter
+counts = Counter("mississippi")
+print(counts)                 # Counter({'i': 4, 's': 4, 'p': 2, 'm': 1})
+print(counts["s"], counts["z"])   # missing keys give 0, no KeyError
+print(counts.most_common(2))
+print(Counter("listen") == Counter("silent"))
+</pre>
+
+<h2>4. Pattern 3 — grouping</h2>
+<p>When things that "belong together" share some <b>key</b>, use a dict from key → list. The art is choosing the key. For anagrams, the key is the sorted letters.</p>
+<div data-viz="hash-group"></div>
+
+<h2>5. Pattern 4 — seen before (sets)</h2>
+<p>When you only need yes/no, use a set: duplicates (lesson 02), visited cells in a grid (lesson 15), cycle detection, "first repeated…".</p>
+
+<div class="callout pattern"><span class="title">🧩 Templates</span>
+<pre><code># complement / seen-before
+seen = {}                          # or set()
+for i, x in enumerate(nums):
+    if (something about x) in seen:
+        return ...
+    seen[x] = i
+
+# counting
+counts = {}
+for x in items:
+    counts[x] = counts.get(x, 0) + 1   # or: counts = Counter(items)
+
+# grouping
+from collections import defaultdict
+groups = defaultdict(list)
+for item in items:
+    groups[key_of(item)].append(item)</code></pre>
+<p><b>Signals:</b> unsorted input · "pair / two numbers" · "duplicate" · "seen before" · "count / frequency / most common" · "anagram" · "group" · "unique" · need O(1) lookups.</p></div>
+
+<h2>6. Common mistakes</h2>
+<table>
+<tr><th>Mistake</th><th>Fix</th></tr>
+<tr><td><code>d[k] += 1</code> → <code>KeyError</code> for a new key</td><td><code>d[k] = d.get(k, 0) + 1</code>, or use <code>Counter</code> / <code>defaultdict(int)</code></td></tr>
+<tr><td>Using a list as a key (<code>TypeError: unhashable type: 'list'</code>)</td><td>Use <code>tuple(the_list)</code> or a string</td></tr>
+<tr><td><code>empty = {}</code> to make a set</td><td><code>{}</code> is an empty <b>dict</b>. Use <code>set()</code>.</td></tr>
+<tr><td>Changing a dict while looping over it</td><td>Loop over <code>list(d.items())</code>, or build a new dict</td></tr>
+<tr><td>Forgetting the memory</td><td>The dict/set is O(n) extra space — say it when you give the complexity</td></tr>
+</table>
+
+<h2>7. 🛠 Practice</h2>
+<p>Workbook file: <code>workbook/04_hashing.py</code>.</p>
+<div data-problem="hash-two-sum" data-n="1"></div>
+<div data-problem="hash-anagram" data-n="2"></div>
+<div data-problem="hash-first-unique" data-n="3"></div>
+<div data-problem="hash-ransom" data-n="4"></div>
+<div data-problem="hash-isomorphic" data-n="5"></div>
+<div data-problem="hash-group-anagrams" data-n="6"></div>
+<div data-problem="hash-top-k" data-n="7"></div>
+<div data-problem="hash-consecutive" data-n="8"></div>
+
+<div data-quiz="hash-quiz"></div>
+
+<h2>8. 📌 Summary</h2>
+<ul>
+<li>dict/set: add, remove, lookup in O(1) average, at the cost of O(n) memory.</li>
+<li>Four patterns: complement, counting, grouping, seen-before.</li>
+<li>Choosing the right <b>key</b> is the creative part (sorted letters, a tuple of counts, a (row, col) pair…).</li>
+</ul>
+<p><b>More LeetCode:</b> 219 Contains Duplicate II · 290 Word Pattern · 169 Majority Element · 36 Valid Sudoku · 438 Find All Anagrams (with sliding window) · 560 Subarray Sum Equals K (lesson 07).</p>
+
+</div></main>
+<script src="data/04-hashing.js"></script>
+<script src="data/04-hashing.traces.js"></script>
+<script src="../assets/py-src.js"></script>
+<script src="../assets/player.js"></script>
+<script src="../assets/python.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

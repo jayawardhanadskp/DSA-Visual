@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Two pointers — DSA with Python</title>
+<link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/core.js"></script>
+</head>
+<body data-lesson="05">
+<main><div class="content">
+
+<div class="kicker">Lesson 05 · Core pattern</div>
+<h1>Two pointers</h1>
+<p class="lead">Your first real <b>pattern</b>. Two index variables walk through a list, and every step they throw away
+part of the problem. It turns many O(n²) "try every pair" solutions into O(n).</p>
+
+<div class="callout key"><span class="title">🎯 After this lesson you can</span>
+<ul>
+<li>recognise when a problem wants two pointers (the "signals")</li>
+<li>write the two templates — <b>opposite ends</b> and <b>fast &amp; slow</b> — from memory</li>
+<li>explain <i>why</i> it is correct (not just copy it)</li>
+<li>solve LeetCode 125, 167, 283, 26, 977, 11, 15</li>
+</ul></div>
+
+<h2>1. The real-life picture</h2>
+<p>You and a friend stand at the two ends of a line of people sorted by height. You want two people whose heights
+add up to exactly 340&nbsp;cm. You call out the sum of the two people you are standing next to:</p>
+<ul>
+<li>too small? The <b>shortest</b> person can't work with anyone — even the tallest person wasn't enough. So you step to the next person.</li>
+<li>too big? The <b>tallest</b> person can't work with anyone — even the shortest person was too much. Your friend steps inwards.</li>
+</ul>
+<p>Every step, one person is removed forever. With n people you need at most n steps — not n × n.</p>
+
+<h2>2. 👀 See it: the slow way first</h2>
+<p>To feel why the pattern matters, watch brute force first. It tries <b>every pair</b> (i, j). Press <kbd>Next ▶</kbd>
+or <b>Play</b> and watch the <code>checks</code> counter.</p>
+<div data-viz="tp-brute"></div>
+<p>15 checks for 6 numbers. For n numbers it's about n²/2 — for 100,000 numbers that is <b>5 billion</b> checks. 🐌</p>
+
+<h2>3. 👀 See it: two pointers</h2>
+<p>Same sorted list, target <code>10</code>. The blue shaded area is the part of the list that is still "alive".
+The grey cells are numbers we <b>proved</b> can't be in the answer. Read the explanation bar under the code at every step.</p>
+<div data-viz="tp-pair-sum"></div>
+
+<div class="callout tip"><span class="title">How to use every visualizer in this course</span>
+<ol>
+<li><b>Run it once</b> with <kbd>Next ▶</kbd> (or <kbd>→</kbd> on your keyboard after clicking the box). Read the explanation at each step.</li>
+<li>Turn on <b>🧠 Predict mode</b> and run it again: before each step, <i>click the line you think runs next</i>. Wrong guesses are where you learn.</li>
+<li>Press <b>✏️ Edit &amp; visualize</b>, change the input (try a target that doesn't exist, like <code>100</code>) and watch again.</li>
+</ol></div>
+
+<div data-tracetable="tp-pair-sum" data-line="4" data-vars="left, right" data-max="5"
+  data-intro="Every time line 4 (<code>total = ...</code>) is about to run, what are <code>left</code> and <code>right</code>? Use the list <code>[1, 3, 4, 6, 8, 11]</code> and target <code>10</code>. Row 1 is filled for you. Try on paper first!"></div>
+
+<h3>Why is it correct? (the part most tutorials skip)</h3>
+<p>Say <code>nums[left] + nums[right] &lt; target</code>. <code>nums[right]</code> is the <b>biggest</b> number still alive.
+If <code>nums[left]</code> plus the biggest number is still too small, then <code>nums[left]</code> plus <i>any</i> other alive number is
+also too small. So <code>nums[left]</code> is useless → <code>left += 1</code> loses nothing. The "too big" case is the mirror image.</p>
+<p>This is called an <b>invariant</b>: <i>"if an answer exists, it is inside <code>[left, right]</code>"</i>. It is true at the start and stays true
+after every step. When you can say the invariant, you can write the loop without bugs.</p>
+
+<h2>4. Template A — opposite ends</h2>
+<div class="callout pattern"><span class="title">🧩 Template: opposite ends</span>
+<pre><code>left, right = 0, len(arr) - 1
+while left < right:
+    # look at arr[left] and arr[right]
+    if found_answer:
+        return ...
+    elif need_bigger:      # (only works if arr is sorted)
+        left += 1
+    else:
+        right -= 1</code></pre>
+<p><b>Signals:</b> sorted list · "pair" / "two numbers" · palindrome · reverse in place · "from both ends" · container / area between two lines.</p>
+</div>
+<p>The same shape reverses a list: swap the two ends, then move both inwards.</p>
+<div data-viz="tp-reverse"></div>
+
+<div class="two-col">
+<div><div class="label">Dart</div>
+<pre><code class="plain">var l = 0, r = chars.length - 1;
+while (l &lt; r) {
+  final tmp = chars[l];
+  chars[l] = chars[r];
+  chars[r] = tmp;
+  l++; r--;
+}</code></pre></div>
+<div><div class="label">Python</div>
+<pre><code>left, right = 0, len(chars) - 1
+while left < right:
+    chars[left], chars[right] = chars[right], chars[left]
+    left += 1
+    right -= 1</code></pre></div>
+</div>
+<div class="callout dart"><span class="title">Dart → Python</span>
+Python has no <code>++</code>/<code>--</code>: write <code>left += 1</code>. And <code>a, b = b, a</code> swaps two values in one line
+(Python builds the right side first, then assigns) — no <code>tmp</code> variable needed.</div>
+
+<h2>5. Template B — fast &amp; slow (same direction)</h2>
+<p>Both pointers go left → right. <code>read</code> (fast) looks at every element. <code>write</code> (slow) only moves when we keep something.
+Everything before <code>write</code> (green) is the finished answer — that's the invariant.</p>
+<div data-viz="tp-dedupe"></div>
+<div class="callout pattern"><span class="title">🧩 Template: fast &amp; slow (in-place filter)</span>
+<pre><code>write = 0
+for read in range(len(arr)):
+    if keep(arr[read]):
+        arr[write] = arr[read]
+        write += 1
+# arr[:write] is the answer</code></pre>
+<p><b>Signals:</b> "in place" · "without extra memory" · remove / move / keep some elements · "keep the relative order".</p>
+</div>
+
+<h2>6. Common mistakes</h2>
+<table>
+<tr><th>Mistake</th><th>Fix</th></tr>
+<tr><td><code>while left &lt;= right</code> in pair problems</td><td>Then <code>left == right</code> uses the <b>same</b> element twice. Use <code>&lt;</code>.</td></tr>
+<tr><td>Forgetting to move a pointer in some branch</td><td>Infinite loop. Every path through the loop body must move at least one pointer.</td></tr>
+<tr><td>Using opposite ends on an <b>unsorted</b> list</td><td>Sort first (if indexes don't matter) or use a dict (lesson 04).</td></tr>
+<tr><td><code>right = len(arr)</code></td><td>Last index is <code>len(arr) - 1</code>. <code>arr[len(arr)]</code> → <code>IndexError</code>.</td></tr>
+</table>
+
+<h2>7. 🛠 Build it: practice</h2>
+<p>Write the code yourself in the editors below. <kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>Enter</kbd> runs the tests (the first run downloads Python
+into the browser — a few seconds, once). Stuck? Use hints one at a time. If a test fails, press <b>🎬 Watch my code</b> to step through
+<i>your</i> code. Prefer VS Code? The same problems are in <code>workbook/05_two_pointers.py</code>.</p>
+<div class="callout warn"><span class="title">The rule that makes this course work</span>
+Try every problem for at least <b>15 minutes</b> before the solution. Write the steps in plain English first (as comments), then code.
+When you read a solution, close it and type it again from memory.</div>
+
+<div data-problem="tp-palindrome" data-n="1"></div>
+<div data-problem="tp-pair-sum" data-n="2"></div>
+<div data-problem="tp-move-zeroes" data-n="3"></div>
+<div data-problem="tp-dedupe" data-n="4"></div>
+<div data-problem="tp-squares" data-n="5"></div>
+<div data-problem="tp-water" data-n="6"></div>
+<div data-problem="tp-3sum" data-n="7"></div>
+
+<div data-quiz="tp-quiz"></div>
+
+<h2>8. 📌 Summary</h2>
+<ul>
+<li><b>Opposite ends</b>: sorted list, pairs, palindromes, reversing. Each step removes one element from the search.</li>
+<li><b>Fast &amp; slow</b>: in-place filtering. <code>write</code> marks the end of the finished part.</li>
+<li>Both are <b>O(n) time, O(1) extra space</b>.</li>
+<li>To be sure it's correct, say the <b>invariant</b>.</li>
+</ul>
+<p><b>More LeetCode with this pattern:</b> 344 Reverse String · 88 Merge Sorted Array · 680 Valid Palindrome II · 16 3Sum Closest ·
+42 Trapping Rain Water (hard) · and linked-list fast/slow pointers in lesson 09.</p>
+
+</div></main>
+<script src="data/05-two-pointers.js"></script>
+<script src="data/05-two-pointers.traces.js"></script>
+<script src="../assets/py-src.js"></script>
+<script src="../assets/player.js"></script>
+<script src="../assets/python.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

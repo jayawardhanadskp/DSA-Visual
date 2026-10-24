@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trees &amp; BST — DSA with Python</title>
+<link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/core.js"></script>
+</head>
+<body data-lesson="13">
+<main><div class="content">
+
+<div class="kicker">Lesson 13 · Trees &amp; graphs</div>
+<h1>Trees &amp; binary search trees</h1>
+<p class="lead">You already know trees: a Flutter widget tree! A node has children, the top is the <b>root</b>, nodes without children are <b>leaves</b>.
+Tree problems are recursion problems in disguise: if you can solve it for one node, given the answers for its subtrees, you can solve it for the whole tree.</p>
+
+<div class="callout key"><span class="title">🎯 After this lesson you can</span>
+<ul><li>do DFS (pre/in/post-order) with recursion, and BFS level by level with a queue</li>
+<li>decide whether information should flow <b>down</b> (arguments) or <b>up</b> (return values)</li>
+<li>search, insert and validate a binary search tree</li>
+<li>solve LeetCode 104, 226, 100, 112, 102, 199, 98, 230, 235, 543</li></ul></div>
+
+<h2>1. Words you need</h2>
+<pre><code class="plain">            8          ← root (depth 0)
+          /   \
+         3     10      ← 3 is the parent of 1 and 6; 1 and 6 are siblings
+        / \      \
+       1   6      14   ← 1 and 14 are leaves (no children)
+          / \
+         4   7         ← height of the tree = 4 levels (or 3 edges)</code></pre>
+<ul>
+<li><b>Binary tree</b>: every node has at most 2 children, <code>left</code> and <code>right</code>.</li>
+<li><b>Subtree</b>: a node and everything below it. Every subtree is itself a tree → recursion!</li>
+<li><b>Binary search tree (BST)</b>: for every node, everything in the left subtree is smaller and everything in the right subtree is bigger.</li>
+</ul>
+<div class="two-col">
+<div><div class="label">Dart / Flutter</div>
+<pre><code class="plain">// a widget tree is a (non-binary) tree:
+Column(children: [
+  Text('a'),
+  Row(children: [Icon(...), Text('b')]),
+])</code></pre></div>
+<div><div class="label">Python (LeetCode's TreeNode)</div>
+<pre><code>class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right</code></pre></div>
+</div>
+
+<h2>2. 👀 Depth-first search (DFS)</h2>
+<p>DFS goes as deep as possible before coming back. With recursion it's 3 lines. The only difference between the three orders is
+<b>where</b> you handle the node: before the children (pre-order), between them (in-order) or after them (post-order).</p>
+<div data-viz="tree-inorder"></div>
+<div class="callout pattern"><span class="title">🧩 Template: DFS on a tree</span>
+<pre><code>def dfs(node):
+    if node is None:          # base case: empty subtree
+        return ...
+    # pre-order:  use node.val here (top-down)
+    left = dfs(node.left)
+    # in-order:   use node.val here (BST → sorted order)
+    right = dfs(node.right)
+    # post-order: use left + right here (bottom-up)
+    return ...</code></pre></div>
+<p>Try it: press ✏️ Edit &amp; visualize above and move <code>out.append(node.val)</code> before the first recursive call (pre-order) or after the second (post-order). Watch the order change.</p>
+
+<h3>Answers flowing up</h3>
+<p>"How deep is the tree?" — ask each subtree for its depth, take the bigger one, add 1. Each call <b>returns</b> its answer to its parent.</p>
+<div data-viz="tree-depth"></div>
+
+<h2>3. 👀 Breadth-first search (BFS)</h2>
+<p>BFS visits the tree <b>level by level</b>, using a <b>queue</b>: take a node from the front, add its children to the back.
+The <code>for _ in range(len(queue))</code> loop handles exactly one level.</p>
+<div data-viz="tree-bfs"></div>
+<div class="callout pattern"><span class="title">🧩 Template: BFS level by level</span>
+<pre><code>from collections import deque
+queue = deque([root])
+while queue:
+    for _ in range(len(queue)):       # one whole level
+        node = queue.popleft()
+        ...                           # use node
+        if node.left:  queue.append(node.left)
+        if node.right: queue.append(node.right)</code></pre>
+<p><b>DFS or BFS?</b> BFS for "level", "closest", "shortest", "right side view". DFS for almost everything else (depth, paths, sums, validate, compare).</p></div>
+
+<h2>4. 👀 Binary search trees</h2>
+<p>A BST is binary search turned into a tree: at each node go left (smaller) or right (bigger). Search, insert and delete take O(h) where h is the height —
+O(log n) when the tree is balanced, but O(n) if it grows like a line (insert 1, 2, 3, 4, … to see that).</p>
+<div data-viz="tree-bst-insert"></div>
+
+<h2>5. How to think about any tree problem</h2>
+<ol>
+<li><b>What does the function return for one subtree?</b> (its depth? its sum? is it valid? the node found?)</li>
+<li><b>Base case:</b> what is the answer for an empty tree (<code>None</code>)? Sometimes also: for a leaf.</li>
+<li><b>Combine:</b> given the answers of the left and right subtrees, what is the answer for this node?</li>
+<li>Does something have to flow <b>down</b> instead (a running sum, allowed min/max bounds)? → add parameters.</li>
+<li>Is the answer not the return value (e.g. "longest path anywhere")? → keep a <code>best</code> variable outside and update it (<code>nonlocal</code>).</li>
+</ol>
+
+<h2>6. 🛠 Practice</h2>
+<p><code>TreeNode</code> is already defined. Trees in the tests use LeetCode's format: <code>[3, 9, 20, None, None, 15, 7]</code> lists the
+nodes level by level, with <code>None</code> for a missing child. 🎬 Watch my code draws your tree. Workbook: <code>workbook/13_trees.py</code>.</p>
+<div data-problem="tr-depth" data-n="1"></div>
+<div data-problem="tr-invert" data-n="2"></div>
+<div data-problem="tr-same" data-n="3"></div>
+<div data-problem="tr-path-sum" data-n="4"></div>
+<div data-problem="tr-diameter" data-n="5"></div>
+<div data-problem="tr-levels" data-n="6"></div>
+<div data-problem="tr-right-view" data-n="7"></div>
+<div data-problem="tr-valid-bst" data-n="8"></div>
+<div data-problem="tr-kth" data-n="9"></div>
+<div data-problem="tr-lca" data-n="10"></div>
+
+<div data-quiz="tr-quiz"></div>
+
+<h2>7. 📌 Summary</h2>
+<ul>
+<li>A tree is a node plus subtrees → recursion with base case <code>node is None</code>.</li>
+<li>DFS (recursion): pre / in / post-order. BFS (queue): level by level.</li>
+<li>Information flows up (return values) or down (arguments); a global <code>best</code> handles "anywhere in the tree".</li>
+<li>BST: left &lt; node &lt; right; in-order is sorted; operations are O(height).</li>
+</ul>
+<p><b>More LeetCode:</b> 101 Symmetric Tree · 572 Subtree of Another Tree · 110 Balanced Binary Tree · 105 Construct Tree from Preorder and Inorder · 236 LCA of a Binary Tree · 124 Binary Tree Maximum Path Sum (hard) · 297 Serialize and Deserialize (hard).</p>
+
+</div></main>
+<script src="data/13-trees.js"></script>
+<script src="data/13-trees.traces.js"></script>
+<script src="../assets/py-src.js"></script>
+<script src="../assets/player.js"></script>
+<script src="../assets/python.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

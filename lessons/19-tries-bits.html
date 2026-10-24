@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tries &amp; bit tricks — DSA with Python</title>
+<link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/core.js"></script>
+</head>
+<body data-lesson="19">
+<main><div class="content">
+
+<div class="kicker">Lesson 19 · Advanced techniques</div>
+<h1>Tries &amp; bit tricks</h1>
+<p class="lead">Two smaller topics that appear regularly in interviews. A <b>trie</b> stores words so that words with the same beginning share the same path —
+perfect for autocomplete. <b>Bit manipulation</b> treats a number as a row of 0s and 1s, and gives a few very neat tricks.</p>
+
+<div class="callout key"><span class="title">🎯 After this lesson you can</span>
+<ul><li>build a trie and use it for prefix searches and wildcards</li>
+<li>read binary, and use <code>&amp; | ^ &lt;&lt; &gt;&gt;</code></li>
+<li>use the classic tricks: <code>x ^ x = 0</code>, <code>n &amp; (n − 1)</code></li>
+<li>solve LeetCode 208, 211, 1268, 136, 191, 231, 338, 190</li></ul></div>
+
+<h2>Part A — Tries</h2>
+
+<h2>1. 👀 A tree of letters</h2>
+<p>Each node is a dict of <code>letter → child node</code>, plus a flag "a word ends here". "car", "cat" and "cart" share the path c → a.
+A green ✓ node marks the end of a word.</p>
+<div data-viz="trie-insert"></div>
+<div class="callout dart"><span class="title">Where you've seen it</span>
+The search bar in your phone's contacts, a code editor's autocomplete, and a spell checker all need "which words start with what I typed?". A trie answers in
+O(length of the prefix), no matter how many words exist.</div>
+<div class="callout pattern"><span class="title">🧩 Template: trie with nested dicts</span>
+<pre><code>root = {}
+
+def insert(word):
+    node = root
+    for ch in word:
+        node = node.setdefault(ch, {})   # go down, creating if needed
+    node["$"] = True                     # word ends here
+
+def walk(text):                          # the node for this prefix, or None
+    node = root
+    for ch in text:
+        if ch not in node:
+            return None
+        node = node[ch]
+    return node
+
+# search(word):      (n := walk(word)) is not None and "$" in n
+# starts_with(pre):  walk(pre) is not None</code></pre>
+<p><b>Signals:</b> prefix, autocomplete, "starts with", dictionary of words, wildcard search, searching many words in a grid (LC 212).</p></div>
+
+<h2>Part B — Bits</h2>
+
+<h2>2. Binary in 2 minutes</h2>
+<p>Computers store integers in binary: each position is a power of two. <code>13 = 8 + 4 + 1 = 0b1101</code>.</p>
+<pre class="playground">
+x = 13
+print(bin(x), x.bit_count(), int("1101", 2))   # 0b1101, three 1-bits, back to 13
+print(f"{x:08b}")                               # padded to 8 digits
+print(x & 1)          # last bit: 1 → odd
+print(x >> 1, x << 1) # 6 (÷2), 26 (×2)
+print(x & (1 << 2))   # is bit 2 set? (4 → yes)
+</pre>
+<div data-widget="bits-play"></div>
+<table>
+<tr><th>Trick</th><th>Meaning</th></tr>
+<tr><td><code>x &amp; 1</code></td><td>is x odd?</td></tr>
+<tr><td><code>x ^ x == 0</code>, <code>x ^ 0 == x</code></td><td>XOR cancels pairs → "find the single one"</td></tr>
+<tr><td><code>n &amp; (n - 1)</code></td><td>removes the lowest 1-bit → count bits, power of two</td></tr>
+<tr><td><code>n &amp; -n</code></td><td>keeps only the lowest 1-bit</td></tr>
+<tr><td><code>1 &lt;&lt; k</code></td><td>2ᵏ; a "mask" with only bit k set</td></tr>
+<tr><td><code>mask &gt;&gt; i &amp; 1</code></td><td>is item i in the subset encoded by <code>mask</code>? (all 2ⁿ subsets = masks 0 … 2ⁿ − 1)</td></tr>
+</table>
+
+<h2>3. 👀 n &amp; (n − 1)</h2>
+<div data-viz="bits-count"></div>
+
+<h2>4. 👀 XOR cancels pairs</h2>
+<div data-viz="bits-xor"></div>
+
+<h2>5. 🛠 Practice</h2>
+<p>Workbook: <code>workbook/19_tries_bits.py</code>.</p>
+<div data-problem="tb-trie" data-n="1"></div>
+<div data-problem="tb-word-dict" data-n="2"></div>
+<div data-problem="tb-suggest" data-n="3"></div>
+<div data-problem="tb-single" data-n="4"></div>
+<div data-problem="tb-ones" data-n="5"></div>
+<div data-problem="tb-power2" data-n="6"></div>
+<div data-problem="tb-count-bits" data-n="7"></div>
+<div data-problem="tb-reverse" data-n="8"></div>
+
+<div data-quiz="tb-quiz"></div>
+
+<h2>6. 📌 Summary</h2>
+<ul>
+<li>Trie: a tree of letters, shared prefixes, O(word length) per operation. Nested dicts in Python.</li>
+<li>Bits: AND, OR, XOR, shifts. <code>x ^ x = 0</code> and <code>n &amp; (n − 1)</code> are the two tricks to remember.</li>
+</ul>
+<p><b>More LeetCode:</b> 212 Word Search II (hard) · 648 Replace Words · 720 Longest Word in Dictionary · 268 Missing Number (XOR) · 371 Sum of Two Integers · 78 Subsets (bitmask version) · 137 Single Number II.</p>
+
+</div></main>
+<script src="data/19-tries-bits.js"></script>
+<script src="data/19-tries-bits.traces.js"></script>
+<script src="../assets/py-src.js"></script>
+<script src="../assets/player.js"></script>
+<script src="../assets/python.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>
